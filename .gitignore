@@ -1,0 +1,4 @@
+env.php
+/buffer/*
+/output/*
+/output/buffer/*
