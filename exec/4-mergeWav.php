@@ -62,7 +62,6 @@ function mixAudioWithOpEd(string $opMp3, string $talkWav, string $bgmMp3, string
     }
 }
 
-
 // 00分放送
 $opening   = '/assets/jingle/ネルルラジオ.mp3';
 $talkWav   = '/output/00.wav'; // 5〜10分のトークWav
@@ -71,7 +70,7 @@ $ending    = '/assets/jingle/ネルルラジオ.mp3';
 $outputMp3 = '/output/final_podcast_00.mp3';
 
 // 実行
-mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.15);
+mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.3);
 
 // 15分放送
 $opening   = '/assets/jingle/ネルルラジオ.mp3';
@@ -81,7 +80,7 @@ $ending    = '/assets/jingle/ネルルラジオ.mp3';
 $outputMp3 = '/output/final_podcast_15.mp3';
 
 // 実行
-mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.15);
+mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.3);
 
 // 30分放送
 $opening   = '/assets/jingle/ネルルラジオ.mp3';
@@ -91,7 +90,7 @@ $ending    = '/assets/jingle/ネルルラジオ.mp3';
 $outputMp3 = '/output/final_podcast_30.mp3';
 
 // 実行
-mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.15);
+mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.3);
 
 // 45分放送
 $opening   = '/assets/jingle/ネルルラジオ.mp3';
@@ -101,5 +100,5 @@ $ending    = '/assets/jingle/ネルルラジオ.mp3';
 $outputMp3 = '/output/final_podcast_45.mp3';
 
 // 実行
-mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.15);
+mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.3);
 
