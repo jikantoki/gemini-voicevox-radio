@@ -29,16 +29,17 @@ function mixAudioWithOpEd(string $opMp3, string $talkWav, string $bgmMp3, string
     }
 
     // 2. FFmpegコマンドの組み立て
-    // [ポイント]
-    // - -stream_loop -1 : BGM入力を無限ループさせる
-    // - amix=duration=first : 1番目の入力（トーク）の長さに合わせてBGMをカットする
-    // - concat=n=3 : 「OP」→「BGM付きトーク」→「ED」の3つを順番に1本に繋ぐ
+    // [変更のポイント]
+    // - -f lavfi -i anullsrc=r=44100:cl=stereo : 3秒用の無音ソース（44.1kHz/ステレオ）を生成して5番目の入力（[4:a]）とする
+    // - [4:a]atrim=end=3[silence] : 生成した無音ソースを3秒でカットして共通パーツ化
+    // - concat=n=5 : 「3秒無音」→「OP」→「BGM付きトーク」→「ED」→「3秒無音」の5つを繋ぐ
     $cmd = sprintf(
-        'ffmpeg -y -i %s -i %s -stream_loop -1 -i %s -i %s -filter_complex ' .
-        '"[1:a]volume=7.5[talk_vol];' .
+        'ffmpeg -y -i %s -i %s -stream_loop -1 -i %s -i %s -f lavfi -i anullsrc=r=48000:cl=stereo -filter_complex ' .
+        '"[4:a]atrim=end=3,asplit=2[silence1][silence2];' .
+        '[1:a]volume=7.5,aresample=48000,aformat=channel_layouts=stereo[talk_vol];' .
         '[2:a]volume=%f[bgm_vol];' .
         '[talk_vol][bgm_vol]amix=inputs=2:duration=first[talk_bgm];' .
-        '[0:a][talk_bgm][3:a]concat=n=3:v=0:a=1" ' .
+        '[silence1][0:a][talk_bgm][3:a][silence2]concat=n=5:v=0:a=1" ' .
         '-c:a libmp3lame -q:a 2 %s 2>&1',
         escapeshellarg($absOp),
         escapeshellarg($absTalk),
