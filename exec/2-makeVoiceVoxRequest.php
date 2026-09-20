@@ -13,10 +13,18 @@ $outputText15 = getTalkScript($inputText15);
 $outputText30 = getTalkScript($inputText30);
 $outputText45 = getTalkScript($inputText45);
 
-outputToFile('00-2.txt', json_encode($outputText00, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-outputToFile('15-2.txt', json_encode($outputText15, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-outputToFile('30-2.txt', json_encode($outputText30, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-outputToFile('45-2.txt', json_encode($outputText45, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+outputToFile('/buffer/00-2.txt', json_encode($outputText00, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+outputToFile('/buffer/15-2.txt', json_encode($outputText15, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+outputToFile('/buffer/30-2.txt', json_encode($outputText30, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+outputToFile('/buffer/45-2.txt', json_encode($outputText45, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+
+date_default_timezone_set('Asia/Tokyo');
+$now = date('Y-m-d-Hi');
+
+outputToFile('/talkHistory/' . $now . '-00.txt', json_encode($outputText00, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+outputToFile('/talkHistory/' . $now . '-15.txt', json_encode($outputText15, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+outputToFile('/talkHistory/' . $now . '-30.txt', json_encode($outputText30, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+outputToFile('/talkHistory/' . $now . '-45.txt', json_encode($outputText45, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
 
 /**
  * ファイルを読み込んで中身を返す
@@ -42,7 +50,11 @@ function getTalkScript($inputText = '') {
   // キャラクター名とVOICEVOXのspeaker IDの対応マッピング
   $speakerMap = [
       'めたん' => 2, // 四国めたん（ノーマル）
+      'ずんだもん' => 3, // ずんだもん（ノーマル）
       'つむぎ' => 8, // 春日部つむぎ（ノーマル）
+      'りつ' => 9, // 波音リツ（ノーマル）
+      'はう' => 10, // 雨晴はう（ノーマル）
+      'そら' => 16, // 九州そら（ノーマル）
   ];
 
   // テキストを行ごとに分解
@@ -83,6 +95,6 @@ function getTalkScript($inputText = '') {
  * @return int|false 保存に成功した場合は書き込んだバイト数、失敗した場合はfalse
  */
 function outputToFile ($filename = '', $content = '') {
-  $filePath = $_SERVER['DOCUMENT_ROOT'] . '/buffer/' . $filename;
+  $filePath = $_SERVER['DOCUMENT_ROOT'] . $filename;
   return file_put_contents($filePath, $content);
 }
