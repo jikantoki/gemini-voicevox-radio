@@ -36,7 +36,7 @@ function mixAudioWithOpEd(string $opMp3, string $talkWav, string $bgmMp3, string
     $cmd = sprintf(
         'ffmpeg -y -i %s -i %s -stream_loop -1 -i %s -i %s -f lavfi -i anullsrc=r=48000:cl=stereo -filter_complex ' .
         '"[4:a]atrim=end=2,asplit=2[silence1][silence2];' .
-        '[1:a]volume=8.5,aresample=48000,aformat=channel_layouts=stereo[talk_vol];' .
+        '[1:a]volume=9.5,aresample=48000,aformat=channel_layouts=stereo[talk_vol];' .
         '[2:a]volume=%f[bgm_vol];' .
         '[talk_vol][bgm_vol]amix=inputs=2:duration=first[talk_bgm];' .
         '[silence1][0:a][talk_bgm][3:a][silence2]concat=n=5:v=0:a=1" ' .
@@ -71,7 +71,7 @@ $ending    = '/assets/jingle/ネルルラジオ.mp3';
 $outputMp3 = '/output/final_podcast_00.mp3';
 
 // 実行
-mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.7);
+mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 1);
 
 // 15分放送
 $opening   = '/assets/jingle/ネルルラジオ.mp3';
@@ -81,7 +81,7 @@ $ending    = '/assets/jingle/ネルルラジオ.mp3';
 $outputMp3 = '/output/final_podcast_15.mp3';
 
 // 実行
-mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.7);
+mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 1);
 
 // 30分放送
 $opening   = '/assets/jingle/ネルルラジオ.mp3';
@@ -91,7 +91,7 @@ $ending    = '/assets/jingle/ネルルラジオ.mp3';
 $outputMp3 = '/output/final_podcast_30.mp3';
 
 // 実行
-mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.7);
+mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 1);
 
 // 45分放送
 $opening   = '/assets/jingle/ネルルラジオ.mp3';
@@ -101,5 +101,5 @@ $ending    = '/assets/jingle/ネルルラジオ.mp3';
 $outputMp3 = '/output/final_podcast_45.mp3';
 
 // 実行
-mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.7);
+mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 1);
 

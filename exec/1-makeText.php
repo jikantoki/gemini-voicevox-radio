@@ -49,16 +49,24 @@ function makeText ($prompt = '') {
   curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($requestData));
   curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
-  $response = curl_exec($ch);
+  while (true) {
+    $response = curl_exec($ch);
 
-  if ($response === false) {
-    $errorFlg = true;
-    echo 'Failed to send request to ' . $URL;
+    if ($response === false) {
+      echo 'Failed to send request to ' . $URL;
+      break;
+    }
+
+    $json = json_decode($response, true);
+
+    if(isset($json['result']) && isset($json['result']['error']['code']) && $json['result']['error']['code'] == 503) {
+      // 503エラーの場合は5秒待って再試行
+      sleep(5);
+      continue;
+    }
+
+    return $json['result']['candidates'][0]['content']['parts'][0]['text'] ?? $response ?? 'Error: No response from Gemini.';
   }
-
-  $json = json_decode($response, true);
-
-  return $json['result']['candidates'][0]['content']['parts'][0]['text'] ?? $response ?? 'Error: No response from Gemini.';
 }
 
 /**
