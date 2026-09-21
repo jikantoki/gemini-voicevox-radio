@@ -92,17 +92,32 @@ function mixAudioWithOpEd(string $opMp3, string $talkWav, string $bgmMp3, string
 $opening   = '/assets/jingle/ネルルラジオ.mp3';
 $talkWav   = '/output/00.wav'; // 5〜10分のトークWav
 $bgm       = '/assets/bgm/bgm1.mp3';   // 短くてもループし、長くても自動カットされます
-$ending    = '/assets/jingle/ネルルラジオ.mp3';
+$ending    = '/assets/jingle/ネルルラジオ_lofi.mp3';
 $outputMp3 = '/output/final_podcast_00.mp3';
 
 // 実行
 mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 1);
 
 // 15分放送
-$opening   = '/assets/jingle/ネルルラジオ.mp3';
+date_default_timezone_set('Asia/Tokyo');
+$hour = (int)date('G'); // 現在の時間を取得（0〜23の整数）
+
+// 時間帯に応じて適切なプロンプトファイルを選択
+if ($hour >= 0 && $hour < 4) {
+    $opening   = '/assets/jingle/ねるるの眠れない話_lofi.mp3';
+} elseif ($hour >= 4 && $hour < 10) {
+    $opening   = '/assets/jingle/ネルルラジオ.mp3';
+} elseif ($hour >= 10 && $hour < 20) {
+    $opening   = '/assets/jingle/ネルルラジオ.mp3';
+} elseif ($hour >= 20 && $hour < 24) {
+    $opening   = '/assets/jingle/ねるるの眠れない話_lofi.mp3';
+} else {
+    $opening   = '/assets/jingle/ネルルラジオ.mp3';
+}
+
 $talkWav   = '/output/15.wav'; // 5〜10分のトークWav
 $bgm       = '/assets/bgm/bgm2.mp3';   // 短くてもループし、長くても自動カットされます
-$ending    = '/assets/jingle/ネルルラジオ.mp3';
+$ending    = '/assets/jingle/ネルルラジオ_lofi.mp3';
 $outputMp3 = '/output/final_podcast_15.mp3';
 
 // 実行
@@ -112,17 +127,17 @@ mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 1);
 $opening   = '/assets/jingle/ネルルラジオ.mp3';
 $talkWav   = '/output/30.wav'; // 5〜10分のトークWav
 $bgm       = '/assets/bgm/bgm3.mp3';   // 短くてもループし、長くても自動カットされます
-$ending    = '/assets/jingle/ネルルラジオ.mp3';
+$ending    = '/assets/jingle/ネルルラジオ_lofi.mp3';
 $outputMp3 = '/output/final_podcast_30.mp3';
 
 // 実行
 mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 1);
 
 // 45分放送
-$opening   = '/assets/jingle/ネルルラジオ.mp3';
+$opening   = '/assets/jingle/ガジェットマニア.mp3';
 $talkWav   = '/output/45.wav'; // 5〜10分のトークWav
 $bgm       = '/assets/bgm/bgm4.mp3';   // 短くてもループし、長くても自動カットされます
-$ending    = '/assets/jingle/ネルルラジオ.mp3';
+$ending    = '/assets/jingle/ネルルラジオ_lofi.mp3';
 $outputMp3 = '/output/final_podcast_45.mp3';
 
 // 実行
