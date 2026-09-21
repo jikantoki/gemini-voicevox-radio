@@ -28,15 +28,39 @@ function mixAudioWithOpEd(string $opMp3, string $talkWav, string $bgmMp3, string
         }
     }
 
-    // 2. FFmpegコマンドの組み立て
-    // [変更のポイント]
+    // 2. トークファイルの長さを取得（フォーマット指定を修正）
+    $durationCmd = sprintf('ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 %s 2>&1', escapeshellarg($absTalk));
+    $durationOutput = trim(shell_exec($durationCmd));
+
+    // 取得した文字列を数値に変換
+    $talkDuration = floatval($durationOutput);
+
+    // 【デバッグ用確認ログ】不要になったら削除して構いません
+    echo "--- デバッグ情報 ---\n";
+    echo "解析された秒数: {$talkDuration} 秒\n";
+    echo "--------------------\n";
+
+    // トーク用フィルターの初期化
+    $talkFilter = 'volume=9.5,aresample=48000,aformat=channel_layouts=stereo';
+
+    // 11分（660秒）を超えている場合は早回しフィルターを追加
+    $limitSeconds = 660.0;
+    if ($talkDuration > $limitSeconds) {
+        $speedRatio = $talkDuration / $limitSeconds;
+        $talkFilter .= sprintf(',atempo=%f', $speedRatio);
+        echo "【判定】トークが11分を超えています。ピッチを維持したまま " . round($speedRatio, 4) . " 倍速に調整します。\n";
+    } else {
+        echo "【判定】トークは11分以内です。速度調整はスキップします。\n";
+    }
+
+    // 3. FFmpegコマンドの組み立て
     // - -f lavfi -i anullsrc=r=44100:cl=stereo : 2秒用の無音ソース（44.1kHz/ステレオ）を生成して5番目の入力（[4:a]）とする
     // - [4:a]atrim=end=2[silence] : 生成した無音ソースを2秒でカットして共通パーツ化
     // - concat=n=5 : 「2秒無音」→「OP」→「BGM付きトーク」→「ED」→「2秒無音」の5つを繋ぐ
     $cmd = sprintf(
         'ffmpeg -y -i %s -i %s -stream_loop -1 -i %s -i %s -f lavfi -i anullsrc=r=48000:cl=stereo -filter_complex ' .
         '"[4:a]atrim=end=2,asplit=2[silence1][silence2];' .
-        '[1:a]volume=9.5,aresample=48000,aformat=channel_layouts=stereo[talk_vol];' .
+        '[1:a]%s[talk_vol];' .
         '[2:a]volume=%f[bgm_vol];' .
         '[talk_vol][bgm_vol]amix=inputs=2:duration=first[talk_bgm];' .
         '[silence1][0:a][talk_bgm][3:a][silence2]concat=n=5:v=0:a=1" ' .
@@ -45,11 +69,12 @@ function mixAudioWithOpEd(string $opMp3, string $talkWav, string $bgmMp3, string
         escapeshellarg($absTalk),
         escapeshellarg($absBgm),
         escapeshellarg($absEd),
+        $talkFilter,
         $bgmVolume,
         escapeshellarg($absOutput)
     );
 
-    // 3. コマンドの実行
+    // 4. コマンドの実行
     echo "音声の合成・結合処理を開始します...\n";
     exec($cmd, $execOutput, $execReturnCode);
 
@@ -102,4 +127,3 @@ $outputMp3 = '/output/final_podcast_45.mp3';
 
 // 実行
 mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 1);
-
