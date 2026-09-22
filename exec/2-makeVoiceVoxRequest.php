@@ -21,10 +21,10 @@ outputToFile('/buffer/45-2.txt', json_encode($outputText45, JSON_UNESCAPED_UNICO
 date_default_timezone_set('Asia/Tokyo');
 $now = date('Y-m-d-Hi');
 
-outputToFile('/talkHistory/' . $now . '-00.txt', json_encode($outputText00, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-outputToFile('/talkHistory/' . $now . '-15.txt', json_encode($outputText15, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-outputToFile('/talkHistory/' . $now . '-30.txt', json_encode($outputText30, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-outputToFile('/talkHistory/' . $now . '-45.txt', json_encode($outputText45, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+outputToFile('/talkHistory/' . $now . '-00.txt', json_encode($inputText00, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+outputToFile('/talkHistory/' . $now . '-15.txt', json_encode($inputText15, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+outputToFile('/talkHistory/' . $now . '-30.txt', json_encode($inputText30, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+outputToFile('/talkHistory/' . $now . '-45.txt', json_encode($inputText45, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
 
 /**
  * ファイルを読み込んで中身を返す
@@ -57,6 +57,9 @@ function getTalkScript($inputText = '') {
       'そら' => 16, // 九州そら（ノーマル）
   ];
 
+  /** 前の発言者のspeaker ID */
+  $lastSpeaker = '';
+
   // テキストを行ごとに分解
   $lines = explode("\n", $inputText);
   $voicevoxPlayList = [];
@@ -78,6 +81,15 @@ function getTalkScript($inputText = '') {
                   'speaker' => $speakerMap[$name],
                   'text'    => $text,
               ];
+              $lastSpeaker = $speakerMap[$name];
+          } else {
+              // 定義されていないキャラクターの場合は前の発言者のspeaker IDを使用
+              if (!empty($lastSpeaker)) {
+                  $voicevoxPlayList[] = [
+                      'speaker' => $lastSpeaker,
+                      'text'    => $line, // 名前がない場合はそのまま行全体をテキストとして扱う
+                  ];
+              }
           }
       }
   }
