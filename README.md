@@ -18,5 +18,5 @@ AIによるラジオ番組制作を全自動で実行するAll In Oneキット
 ## 使い方
 
 1. ./env.php.sampleを./env.sampleにコピーして、GeminiのAPIキーを貼り付け
-1. ./start-all.sh をcronで毎時50分に設定
+1. ./start-all.sh をcronで毎時54分に設定
 1. Azuracastで毎時00分、15分、30分、45分で現在の配信に割り込んで00.mp3、15.mp3、30.mp3、45.mp3を再生するように設定
