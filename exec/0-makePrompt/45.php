@@ -12,7 +12,7 @@ if (file_exists($filename)) {
         // 放送開始時刻を過ぎている場合は、次の時間帯のプロンプトを使用
         $hour += 1;
     }
-    echo $prompt . "\n\n" . "放送開始時に、時刻は" . $hour . "時になりました。を読み上げてください。";
+    echo $prompt . "\n\n" . "放送開始時に、時刻は" . $hour . "時45分になりました。を読み上げてください。";
 } else {
     echo "Prompt file not found.";
 }
