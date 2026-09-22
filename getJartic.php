@@ -38,6 +38,7 @@ $outputJson = [
   "datas" => []
 ];
 
+// 取得日時を出力
 $outputJson['time'] = $date->format('Y年m月d日 H時i分') . "時点での関東の交通情報";
 
 /** 最新のデータを取得するURL */
@@ -88,6 +89,7 @@ foreach ($features as $feature) {
     $direction = $props['d'] ?? '';     // 方向（上り、下りなど）
     $cause   = $props['c'] ?? '';       // 原因（工事、雨、衝突事故など）
     $state   = $props['rd'] ?? '';      // 規制内容（通行止、１車線規制など）
+    $delay   = $props['j'] ?? '';       // 渋滞距離（1km、2kmなど）
     $status  = $props['a'] ?? '';       // 状況（処理中など）
 
     // 道路名が「高速八重洲線　西銀座　竹橋ＪＣＴ方面」のように冗長な場合があるため、
@@ -106,9 +108,15 @@ foreach ($features as $feature) {
         $msg .= " {$section}で";
     }
     if ($cause) {
-        $msg .= "{$cause}のため、";
-    } else {
-        $msg .= "影響により、";
+        if ($state == '規制なし'){
+            $msg .= "{$cause}が原因の規制がありましたが、現在は";
+        } else {
+            $msg .= "{$cause}のため、";
+        }
+    }
+
+    if ($delay) {
+        $msg .= "{$delay}の渋滞";
     }
 
     $msg .= $state;
@@ -122,7 +130,7 @@ foreach ($features as $feature) {
 
 // 画面へ出力（各行を個別のJSON文字列に変換して出力）
 if (empty($messages)) {
-    $outputJson['datas'][] = ["message" => "現在、該当する規制情報はありません。"];
+    $outputJson['datas'][] = ["message" => "現在、該当する渋滞・通行規制情報はありません。"];
 } else {
     foreach ($messages as $message) {
         $outputJson['datas'][] = $message;
