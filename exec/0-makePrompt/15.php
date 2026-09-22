@@ -17,7 +17,13 @@ if ($hour >= 0 && $hour < 4) {
 
 if (file_exists($filename)) {
     $prompt = file_get_contents($filename);
-    echo $prompt . "\n\n" . "放送開始時に、時刻は" . ($hour + 1) . "時15分になりました。を読み上げてください。";
+
+    $liveStartMinute = 0;
+    if ($minute >= $liveStartMinute) {
+        // 放送開始時刻を過ぎている場合は、次の時間帯のプロンプトを使用
+        $hour += 1;
+    }
+    echo $prompt . "\n\n" . "放送開始時に、時刻は" . $hour . "時になりました。を読み上げてください。";
 } else {
     echo "Prompt file not found.";
 }
