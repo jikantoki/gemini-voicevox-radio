@@ -1,4 +1,9 @@
 <?php
+ini_set('display_errors', 'On');
+ini_set('display_startup_errors', 'On');
+// 環境変数の読み込み
+require_once $_SERVER['DOCUMENT_ROOT'] . '/env.php';
+
 set_time_limit(0); // 無制限に実行できるようにする
 
 /** 00分のニュース原稿プロンプト */
@@ -31,6 +36,8 @@ echo "00.txt, 15.txt, 30.txt, 45.txt にニュース原稿を保存しました�
  * @return string ニュース原稿
  */
 function makeText ($prompt = '') {
+  global $API_KEYs;
+
   /** HTTPホスト */
   $httpHost = $_SERVER['HTTP_HOST'] ?? 'localhost';
   /**
@@ -43,13 +50,19 @@ function makeText ($prompt = '') {
     'prompt' => $prompt
   ];
 
-  $ch = curl_init($URL);
-
-  curl_setopt($ch, CURLOPT_POST, true);
-  curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($requestData));
-  curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+  /** 試行回数 */
+  $requestCnt = 0;
+  $err503cnt = 0;
 
   while (true) {
+    echo "Geminiに質問しています…\n";
+    $ch = curl_init($URL);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+      'apikey: ' . $API_KEYs[$requestCnt]
+    ]);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($requestData));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     $response = curl_exec($ch);
 
     if ($response === false) {
@@ -60,11 +73,27 @@ function makeText ($prompt = '') {
     $json = json_decode($response, true);
 
     if(isset($json['result']) && isset($json['result']['error']['code']) && $json['result']['error']['code'] == 503) {
-      // 503エラーの場合は5秒待って再試行
-      sleep(5);
+      echo "503エラー（アクセス過多）のため、3秒待って再実行します\n";
+      // 503エラーの場合は3秒待って再試行
+      if($err503cnt < 3){
+        $err503cnt++;
+        sleep(3);
+        continue;
+      } else {
+        echo "3回連続で失敗したため、中断しました\n";
+        break;
+      }
+    } else if (isset($json['result']) && isset($json['result']['error']['code']) && $json['result']['error']['code'] == 429) {
+      echo "429エラー（リクエスト超過）のため、別のキーで再実行します\n";
+      // 429エラーの場合はAPIキーを変えて再試行
+      if(count($API_KEYs) - 1 <= $requestCnt) {
+        echo "どのAPIキーでもリクエストを実行できませんでした\n";
+        return json_encode($json, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+      }
+      $requestCnt++;
       continue;
     }
-
+    echo 'Geminiからの返答あり';
     return $json['result']['candidates'][0]['content']['parts'][0]['text'] ?? $response ?? 'Error: No response from Gemini.';
   }
 }

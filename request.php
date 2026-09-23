@@ -17,6 +17,9 @@ $errorFlg = false;
  */
 $PROMPT = $_POST['prompt'] ?? $_GET['prompt'] ?? '';
 
+// ヘッダーに 'apikey' または 'Apikey' があればそれを使う。なければ env.php の1つ目を使う
+$API_KEY = $_SERVER['HTTP_APIKEY'] ?? $_SERVER['HTTP_X_APIKEY'] ?? $API_KEYs[0];
+
 if (empty($PROMPT)) {
   $errorFlg = true;
   echo json_encode([

@@ -1,6 +1,7 @@
 <?php
 date_default_timezone_set('Asia/Tokyo');
 $hour = (int)date('G'); // 現在の時間を取得（0〜23の整数）
+$minute = (int)date('i'); // 現在の分を取得（0〜59の整数）
 
 // 時間帯に応じて適切なプロンプトファイルを選択
 if ($hour >= 0 && $hour < 4) {

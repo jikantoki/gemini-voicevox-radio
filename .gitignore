@@ -4,3 +4,4 @@ env.php
 /output/buffer/*
 log.txt
 /talkHistory/*
+/logs/*
