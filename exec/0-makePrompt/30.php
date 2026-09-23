@@ -9,6 +9,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/env.php';
 /** Jarticデータの取得 */
 $jarticJson = getEcho('/getJartic.php');
 
+/** 天気データの取得 */
+$weatherJson = getEcho('/getWeather.php');
+
 $randomUrlId = array_rand($RSS_URLs);
 
 /** RSSデータの読み込み */
@@ -31,7 +34,7 @@ if (file_exists($filename)) {
         // 放送開始時刻を過ぎている場合は、次の時間帯のプロンプトを使用
         $hour += 1;
     }
-    echo $prompt . "\n\n" . "放送開始時に、時刻は" . $hour . "時30分になりました。を読み上げてください。";
+    echo $prompt . "\n\n" . "放送開始時に、時刻は" . ($hour + 1) . "時30分になりました。を読み上げてください。\n\n" . $jarticJson . "\n\n" . $weatherJson . "\n\n" . json_encode($xml, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);;
 } else {
     echo "Prompt file not found.";
 }
