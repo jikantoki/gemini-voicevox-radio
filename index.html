@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VOICEVOX WebUI</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        max-width: 600px;
+        margin: 40px auto;
+        padding: 0 20px;
+        background: #f9f9f9;
+        color: #333;
+      }
+      .card {
+        background: white;
+        padding: 25px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      }
+      label {
+        display: block;
+        margin: 15px 0 5px;
+        font-weight: bold;
+      }
+      input[type='text'],
+      textarea,
+      select {
+        width: 100%;
+        padding: 10px;
+        box-sizing: border-box;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+      }
+      textarea {
+        height: 120px;
+        resize: vertical;
+      }
+      button {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 4px;
+        font-size: 16px;
+        cursor: pointer;
+        width: 100%;
+        margin-top: 15px;
+      }
+      button:disabled {
+        background: #aaa;
+        cursor: not-allowed;
+      }
+      .result-area {
+        margin-top: 25px;
+        border-top: 1px solid #eee;
+        padding-top: 20px;
+        display: none;
+      }
+      audio {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+      .status {
+        margin-top: 10px;
+        color: #666;
+        font-size: 14px;
+        min-height: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h2>VOICEVOX WebUI</h2>
+
+      <label for="apiUrl">API URL</label>
+      <input
+        type="text"
+        id="apiUrl"
+        value="http://voicevox.enoki.local"
+        placeholder="http://..."
+        onchange="loadSpeakers()"
+      />
+
+      <label for="speakerSelect">キャラクター（スタイル）</label>
+      <select id="speakerSelect">
+        <option value="">読み込み中...</option>
+      </select>
+
+      <label for="textInput">テキスト</label>
+      <textarea
+        id="textInput"
+        placeholder="喋らせたい文章を入力してください（例：お疲れ様なのだ！）"
+      ></textarea>
+
+      <button id="generateBtn" onclick="generateVoice()">音声を生成する</button>
+      <div id="status" class="status"></div>
+
+      <div id="resultArea" class="result-area">
+        <audio id="audioPlayer" controls></audio>
+        <a id="downloadLink" download="voicevox.wav"
+          ><button style="background: #28a745; margin-top: 5px">
+            WAVファイルをダウンロード
+          </button></a
+        >
+      </div>
+    </div>
+
+    <script>
+      const statusDiv = document.getElementById('status')
+      const speakerSelect = document.getElementById('speakerSelect')
+
+      // 起動時に話者リストを取得
+      async function loadSpeakers() {
+        const baseUrl = document
+          .getElementById('apiUrl')
+          .value.replace(/\/\$/, '')
+        statusDiv.innerText = '話者リストを取得中...'
+        try {
+          const res = await fetch(`${baseUrl}/speakers`)
+          if (!res.ok) throw new Error('取得失敗')
+          const speakers = await res.json()
+
+          speakerSelect.innerHTML = ''
+          speakers.forEach((sp) => {
+            sp.styles.forEach((st) => {
+              const option = document.createElement('option')
+              option.value = st.id
+              option.innerText = `${sp.name} (${st.name})`
+              speakerSelect.appendChild(option)
+            })
+          })
+          statusDiv.innerText = '準備完了'
+        } catch (e) {
+          speakerSelect.innerHTML = '<option value="">読み込み失敗</option>'
+          statusDiv.innerText =
+            'エラー: APIサーバーと通信できません。CORS設定等を確認してください。'
+        }
+      }
+
+      // 音声生成のメイン処理
+      async function generateVoice() {
+        const baseUrl = document
+          .getElementById('apiUrl')
+          .value.replace(/\/\$/, '')
+        const speakerId = speakerSelect.value
+        const text = document.getElementById('textInput').value
+        const btn = document.getElementById('generateBtn')
+
+        if (!speakerId) return alert('キャラクターを選択してください。')
+        if (!text.trim()) return alert('テキストを入力してください。')
+
+        btn.disabled = true
+        statusDiv.innerText = '音声クエリを生成中...'
+        document.getElementById('resultArea').style.display = 'none'
+
+        try {
+          // 1. audio_query の発行
+          const queryRes = await fetch(
+            `${baseUrl}/audio_query?text=${encodeURIComponent(text)}&speaker=${speakerId}`,
+            {
+              method: 'POST',
+            },
+          )
+          if (!queryRes.ok) throw new Error('音声クエリの作成に失敗しました。')
+          const queryData = await queryRes.json()
+
+          statusDiv.innerText = '音声データを合成中...'
+
+          // 2. synthesis の発行 (WAV取得)
+          const synthRes = await fetch(
+            `${baseUrl}/synthesis?speaker=${speakerId}`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(queryData),
+            },
+          )
+          if (!synthRes.ok) throw new Error('音声合成に失敗しました。')
+          const blob = await synthRes.blob()
+
+          // 3. ブラウザで再生・ダウンロードできるように処理
+          const audioUrl = URL.createObjectURL(blob)
+          document.getElementById('audioPlayer').src = audioUrl
+          document.getElementById('downloadLink').href = audioUrl
+
+          document.getElementById('resultArea').style.display = 'block'
+          statusDiv.innerText = '音声が生成されました！'
+        } catch (e) {
+          statusDiv.innerText = `エラー: ${e.message}`
+        } finally {
+          btn.disabled = false
+        }
+      }
+
+      // 初回読み込み
+      window.onload = loadSpeakers
+    </script>
+  </body>
+</html>
