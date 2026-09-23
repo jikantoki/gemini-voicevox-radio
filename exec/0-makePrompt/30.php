@@ -24,7 +24,8 @@ $filename = $_SERVER['DOCUMENT_ROOT'] . '/prompts/30-news.txt';
 if (file_exists($filename)) {
     $prompt = file_get_contents($filename);
 
-    $liveStartMinute = 0;
+    /** 放送開始時刻（分） */
+    $liveStartMinute = 30;
     if ($minute >= $liveStartMinute) {
         // 放送開始時刻を過ぎている場合は、次の時間帯のプロンプトを使用
         $hour += 1;
