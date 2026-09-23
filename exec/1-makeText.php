@@ -93,7 +93,7 @@ function makeText ($prompt = '') {
       $requestCnt++;
       continue;
     }
-    echo 'Geminiからの返答あり';
+    echo "Geminiからの返答あり。APIキーは環境変数の" . ($requestCnt + 1) . "番を使用しました\n";
     return $json['result']['candidates'][0]['content']['parts'][0]['text'] ?? $response ?? 'Error: No response from Gemini.';
   }
 }
