@@ -72,24 +72,39 @@ function makeText ($prompt = '') {
 
     $json = json_decode($response, true);
 
-    if(isset($json['result']) && isset($json['result']['error']['code']) && $json['result']['error']['code'] == 503) {
-      echo "503エラー（アクセス過多）のため、3秒待って再実行します\n";
-      // 503エラーの場合は3秒待って再試行
-      if($err503cnt < 3){
-        $err503cnt++;
-        sleep(3);
-        continue;
-      } else {
-        echo "3回連続で失敗したため、中断しました\n";
-        break;
-      }
-    } else if (isset($json['result']) && isset($json['result']['error']['code']) && $json['result']['error']['code'] == 429) {
-      echo "429エラー（リクエスト超過）のため、別のキーで再実行します\n";
-      // 429エラーの場合はAPIキーを変えて再試行
+    $errCode = 200;
+    if(isset($json['result']) && isset($json['result']['error']['code']) && $json['result']['error']['code']) {
+      $errCode = $json['result']['error']['code'];
+    }
+    // if($errCode == 503) {
+    //   echo "503エラー（アクセス過多）のため、3秒待って再実行します\n";
+    //   // 503エラーの場合は3秒待って再試行
+    //   if($err503cnt < 3){
+    //     $err503cnt++;
+    //     sleep(3);
+    //     continue;
+    //   } else {
+    //     echo "3回連続で失敗したため、中断しました\n";
+    //     break;
+    //   }
+    // } else if ($errCode == 429) {
+    //   echo "429エラー（リクエスト超過）のため、別のキーで再実行します\n";
+    //   // 429エラーの場合はAPIキーを変えて再試行
+    //   if(count($API_KEYs) - 1 <= $requestCnt) {
+    //     echo "どのAPIキーでもリクエストを実行できませんでした\n";
+    //     return json_encode($json, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+    //   }
+    //   $requestCnt++;
+    //   continue;
+    // }
+    if ($errCode == 429 || $errCode == 503) {
+      echo "${errCode}エラーのため、別のキーで再実行します\n";
+      // 3秒待って、APIキーを変えて再試行
       if(count($API_KEYs) - 1 <= $requestCnt) {
         echo "どのAPIキーでもリクエストを実行できませんでした\n";
         return json_encode($json, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
       }
+      sleep(3);
       $requestCnt++;
       continue;
     }
