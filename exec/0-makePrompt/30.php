@@ -29,11 +29,21 @@ if ($xml === false) {
 /** 整形後のニュースのリスト */
 $newsList = [];
 
-foreach($xml->channel->item as $news) {
+// RSSの整形
+foreach ($xml->channel->item as $news) {
     $newsList[] = [
         'title' => (string)$news->title,
         'description' => (string)$news->description
     ];
+}
+
+/** ニュースリストからランダムな記事をピックアップするindex */
+$newsListKeys = array_rand($newsList, 10);
+
+/** 表示個数を絞った後のニュースリスト */
+$finalNewsList = [];
+foreach ($newsListKeys as $key) {
+    $finalNewsList[] = $newsList[$key];
 }
 
 $filename = $_SERVER['DOCUMENT_ROOT'] . '/prompts/30-news.txt';
@@ -47,7 +57,7 @@ if (file_exists($filename)) {
         // 放送開始時刻を過ぎている場合は、次の時間帯のプロンプトを使用
         $hour += 1;
     }
-    echo $prompt . "\n\n" . "放送開始時に、時刻は" . $hour . "時30分になりました。を読み上げてください。\n\n" . $jarticJson . "\n\n" . $weatherJson . "\n\n" . json_encode($newsList, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);;
+    echo $prompt . "\n\n" . "放送開始時に、時刻は" . $hour . "時30分になりました。を読み上げてください。\n\n" . $jarticJson . "\n\n" . $weatherJson . "\n\n" . json_encode($finalNewsList, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);;
 } else {
     echo "Prompt file not found.";
 }
