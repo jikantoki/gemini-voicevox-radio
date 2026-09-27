@@ -1,4 +1,5 @@
 <?php
+header('Content-Type: application/json; charset=utf-8');
 // リクエストのContent-TypeをJSONに設定
 header('Content-Type: application/json; charset=utf-8');
 

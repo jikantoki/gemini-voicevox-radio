@@ -1,6 +1,4 @@
 <?php
-ini_set('display_errors', 'On');
-ini_set('display_startup_errors', 'On');
 // 環境変数の読み込み
 require_once $_SERVER['DOCUMENT_ROOT'] . '/env.php';
 
