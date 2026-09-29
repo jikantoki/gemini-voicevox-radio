@@ -108,6 +108,6 @@ function getTalkScript($inputText = '') {
  */
 function outputToFile ($filename = '', $content = '') {
   $filePath = $_SERVER['DOCUMENT_ROOT'] . $filename;
-  $content = str_replace($content, '\n', "\n");
+  $content = str_replace('\n', "\n", $content);
   return file_put_contents($filePath, $content);
 }
