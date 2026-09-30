@@ -101,6 +101,13 @@ mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 1);
 // 15分放送
 date_default_timezone_set('Asia/Tokyo');
 $hour = (int)date('G'); // 現在の時間を取得（0〜23の整数）
+$minute = (int)date('i'); // 現在の分を取得（0〜59の整数）
+/** 放送開始時刻（分） */
+$liveStartMinute = 15;
+if ($minute >= $liveStartMinute) {
+    // 放送開始時刻を過ぎている場合は、次の時間帯のプロンプトを使用
+    $hour += 1;
+}
 
 // 時間帯に応じて適切なプロンプトファイルを選択
 if ($hour >= 0 && $hour < 4) {

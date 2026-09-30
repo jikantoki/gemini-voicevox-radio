@@ -7,6 +7,13 @@ date_default_timezone_set('Asia/Tokyo');
 $hour = (int)date('G'); // 現在の時間を取得（0〜23の整数）
 $minute = (int)date('i'); // 現在の分を取得（0〜59の整数）
 
+/** 放送開始時刻（分） */
+$liveStartMinute = 30;
+if ($minute >= $liveStartMinute) {
+    // 放送開始時刻を過ぎている場合は、次の時間帯のプロンプトを使用
+    $hour += 1;
+}
+
 // RSSフィードのURLを読み込み
 require_once $_SERVER['DOCUMENT_ROOT'] . '/env.php';
 
@@ -52,12 +59,6 @@ $filename = $_SERVER['DOCUMENT_ROOT'] . '/prompts/30-news.txt';
 if (file_exists($filename)) {
     $prompt = file_get_contents($filename);
 
-    /** 放送開始時刻（分） */
-    $liveStartMinute = 30;
-    if ($minute >= $liveStartMinute) {
-        // 放送開始時刻を過ぎている場合は、次の時間帯のプロンプトを使用
-        $hour += 1;
-    }
     echo $prompt . "\n\n" . "放送開始時に、時刻は" . $hour . "時30分になりました。を読み上げてください。\n\n" . $jarticJson . "\n\n" . $weatherJson . "\n\n" . json_encode($finalNewsList, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);;
 } else {
     echo "Prompt file not found.";
