@@ -16,7 +16,7 @@ if ($hour >= 0 && $hour < 5) {
     $filename = $_SERVER['DOCUMENT_ROOT'] . '/prompts/00-world-shinya.txt';
 } elseif ($hour >= 5 && $hour < 23) {
     $filename = $_SERVER['DOCUMENT_ROOT'] . '/prompts/00-ogiri-hiru.txt';
-} elseif ($hour >= 23 && $hour < 24) {
+} elseif ($hour >= 23 && $hour <= 24) {
     $filename = $_SERVER['DOCUMENT_ROOT'] . '/prompts/00-world-shinya.txt';
 } else {
     $filename = $_SERVER['DOCUMENT_ROOT'] . '/prompts/00-ogiri-hiru.txt';
