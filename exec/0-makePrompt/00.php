@@ -11,19 +11,46 @@ if ($minute >= $liveStartMinute) {
     $hour += 1;
 }
 
-// 時間帯に応じて適切なプロンプトファイルを選択
-if ($hour >= 0 && $hour < 5) {
-    $filename = $_SERVER['DOCUMENT_ROOT'] . '/prompts/00-world-shinya.txt';
-} elseif ($hour >= 5 && $hour < 23) {
-    $filename = $_SERVER['DOCUMENT_ROOT'] . '/prompts/00-ogiri-hiru.txt';
-} elseif ($hour >= 23 && $hour <= 24) {
-    $filename = $_SERVER['DOCUMENT_ROOT'] . '/prompts/00-world-shinya.txt';
-} else {
-    $filename = $_SERVER['DOCUMENT_ROOT'] . '/prompts/00-ogiri-hiru.txt';
+$filename = $_SERVER['DOCUMENT_ROOT'] . '/prompts/00-ongaku.txt';
+
+$pickupList = [
+    "自宅防音室",
+    "DTM",
+    "VSTプラグイン",
+    "Massive/Vital/Nexus論争",
+    "打ち込みギターの極意",
+    "骨伝導イヤホン",
+    "Reaper（DAW）",
+    "初音ミク",
+    "ボーカロイド",
+    "モデリングアンプ",
+    "シンセサイザーV",
+    "音楽的同位体",
+    "ピッチ補正ソフトの綺麗な調声方法とケロケロボイスの出し方",
+    "完全打ち込みロックバンド曲の音作り",
+    "完全打ち込みEDM曲の音作り",
+    "フューチャー・ファンクというジャンルの曲を作ってみよう（古いシティポップやアニソンのリミックス）",
+    "完全打ち込み電波系アイドルソングの作り方",
+    "完全打ち込みテクノポップの作り方（中田ヤスタカ・パフューム風）",
+    "反位相音源によるボーカル除去とノイキャンの仕組み",
+    "DTMにおける音空間の広げ方、マスタリングの仕方",
+    "アキシブ系とは？概要と歴史を紐解き、アキシブ系楽曲の作り方を学ぼう",
+    "無料で使える即戦力VSTプラグイン",
+    "電波ソングの作り方",
+    "エロゲっぽい曲を作ってみよう",
+    "Ample Guitarの使い方",
+    "自作イヤホン・スピーカー",
+    "オーディオインターフェイス",
+];
+$randomKeys = array_rand($pickupList, 3);
+$pickup = '';
+foreach ($randomKeys as $key) {
+    $pickup .= "'{$pickupList[$key]}', ";
 }
 
 if (file_exists($filename)) {
     $prompt = file_get_contents($filename);
+    $prompt = str_replace("<!-- 今日のお題 -->", $pickup, $prompt);
 
     echo $prompt . "\n\n" . "放送開始時に、時刻は" . $hour . "時になりました。を読み上げてください。";
 } else {
