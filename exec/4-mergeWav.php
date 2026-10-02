@@ -114,9 +114,9 @@ if ($hour >= 0 && $hour < 4) {
     $opening   = '/assets/jingle/ねるるの眠れない話_lofi.mp3';
 } elseif ($hour >= 4 && $hour < 10) {
     $opening   = '/assets/jingle/ネルルラジオ.mp3';
-} elseif ($hour >= 10 && $hour < 21) {
+} elseif ($hour >= 10 && $hour < 23) {
     $opening   = '/assets/jingle/エンカウント・チバ.mp3';
-} elseif ($hour >= 21 && $hour < 24) {
+} elseif ($hour >= 23 && $hour < 24) {
     $opening   = '/assets/jingle/ねるるの眠れない話_lofi.mp3';
 } else {
     $opening   = '/assets/jingle/ネルルラジオ.mp3';

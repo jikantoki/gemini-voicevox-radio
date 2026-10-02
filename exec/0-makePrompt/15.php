@@ -20,10 +20,10 @@ if ($hour >= 0 && $hour < 4) {
 } elseif ($hour >= 4 && $hour < 10) {
     $noon = 'asa';
     $filename = $_SERVER['DOCUMENT_ROOT'] . '/prompts/15-freetalk-asa.txt';
-} elseif ($hour >= 10 && $hour < 21) {
+} elseif ($hour >= 10 && $hour < 23) {
     $noon = 'hiru';
     $filename = $_SERVER['DOCUMENT_ROOT'] . '/prompts/15-freetalk-hiru.txt';
-} elseif ($hour >= 21 && $hour <= 24) {
+} elseif ($hour >= 23 && $hour <= 24) {
     $noon = 'shinya';
     $filename = $_SERVER['DOCUMENT_ROOT'] . '/prompts/15-freetalk-shinya.txt';
 } else {
