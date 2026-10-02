@@ -89,7 +89,7 @@ function mixAudioWithOpEd(string $opMp3, string $talkWav, string $bgmMp3, string
 }
 
 // 00分放送
-$opening   = '/assets/jingle/ネルルラジオ.mp3';
+$opening   = '/assets/jingle/ねるるミュージックアカデミー.mp3';
 $talkWav   = '/output/00.wav'; // 5〜10分のトークWav
 $bgm       = '/assets/bgm/bgm1.mp3';   // 短くてもループし、長くても自動カットされます
 $ending    = '/assets/jingle/ネルルラジオ_lofi.mp3';
@@ -115,7 +115,7 @@ if ($hour >= 0 && $hour < 4) {
 } elseif ($hour >= 4 && $hour < 10) {
     $opening   = '/assets/jingle/ネルルラジオ.mp3';
 } elseif ($hour >= 10 && $hour < 20) {
-    $opening   = '/assets/jingle/ネルルラジオ.mp3';
+    $opening   = '/assets/jingle/エンカウント・チバ.mp3';
 } elseif ($hour >= 20 && $hour < 24) {
     $opening   = '/assets/jingle/ねるるの眠れない話_lofi.mp3';
 } else {
