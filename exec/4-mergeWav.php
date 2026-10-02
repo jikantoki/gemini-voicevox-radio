@@ -3,7 +3,7 @@
 /**
  * オープニング、トーク(Wav)、BGM(自動ループ/カット)、エンディングを合成して1つのMP3を出力する
  */
-function mixAudioWithOpEd(string $opMp3, string $talkWav, string $bgmMp3, string $edMp3, string $outputMp3, float $bgmVolume = 0.15): bool 
+function mixAudioWithOpEd(string $opMp3, string $talkWav, string $bgmMp3, string $edMp3, string $outputMp3, float $bgmVolume = 0.15): bool
 {
     // サーバーのドキュメントルートを取得
     $docRoot = rtrim($_SERVER['DOCUMENT_ROOT'] ?? __DIR__, '/');
@@ -114,9 +114,9 @@ if ($hour >= 0 && $hour < 4) {
     $opening   = '/assets/jingle/ねるるの眠れない話_lofi.mp3';
 } elseif ($hour >= 4 && $hour < 10) {
     $opening   = '/assets/jingle/ネルルラジオ.mp3';
-} elseif ($hour >= 10 && $hour < 20) {
+} elseif ($hour >= 10 && $hour < 21) {
     $opening   = '/assets/jingle/エンカウント・チバ.mp3';
-} elseif ($hour >= 20 && $hour < 24) {
+} elseif ($hour >= 21 && $hour < 24) {
     $opening   = '/assets/jingle/ねるるの眠れない話_lofi.mp3';
 } else {
     $opening   = '/assets/jingle/ネルルラジオ.mp3';
