@@ -8,6 +8,9 @@ HOST="gemini-api.enoki.local"
 # コピー先のディレクトリパス
 DEST_DIR="/mnt/ncdata/admin/files/シェアハウス共有/ラジオ配信リスト/定期実行させるもの/"
 
+# コピー先のディレクトリパス
+PICKUP_DIR="/var/www/html/vhosts/radio/api/"
+
 echo "ラジオ配信スクリプト"
 echo "===================="
 echo "このスクリプトでは、台本の考案からミックス後の音声出力までを自動化します。"
@@ -15,6 +18,8 @@ echo "このスクリプトでは、台本の考案からミックス後の音�
 # HTTP経由で各PHPスクリプトを実行
 curl -s "http://${HOST}/exec/1-makeText.php"
 echo "台本の作成が完了しました。"
+cat "./buffer/00-pickup.txt" > "${PICKUP_DIR}00-pickup.txt"
+cat "./buffer/45-pickup.txt" > "${PICKUP_DIR}45-pickup.txt"
 
 curl -s "http://${HOST}/exec/2-makeVoiceVoxRequest.php"
 echo "音声生成リクエストが送信されました。"
