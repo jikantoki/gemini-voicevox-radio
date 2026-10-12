@@ -46,6 +46,7 @@ if [ -f "./output/final_podcast_00.mp3" ]; then
     echo "コピーとリネームが完了しました！ -> ${DEST_DIR}00.mp3"
 else
     echo "【エラー】コピー元のファイル (./output/final_podcast_00.mp3) が見つかりませんでした。"
+    curl -s "http://${HOST}/sendMattermost.php?sendMessage=【エラー】コピー元のファイル (./output/final_podcast_00.mp3) が見つかりませんでした。"
 fi
 
 if [ -f "./output/final_podcast_15.mp3" ]; then
@@ -57,6 +58,7 @@ if [ -f "./output/final_podcast_15.mp3" ]; then
     echo "コピーとリネームが完了しました！ -> ${DEST_DIR}15.mp3"
 else
     echo "【エラー】コピー元のファイル (./output/final_podcast_15.mp3) が見つかりませんでした。"
+    curl -s "http://${HOST}/sendMattermost.php?sendMessage=【エラー】コピー元のファイル (./output/final_podcast_15.mp3) が見つかりませんでした。"
 fi
 
 if [ -f "./output/final_podcast_30.mp3" ]; then
@@ -68,6 +70,7 @@ if [ -f "./output/final_podcast_30.mp3" ]; then
     echo "コピーとリネームが完了しました！ -> ${DEST_DIR}30.mp3"
 else
     echo "【エラー】コピー元のファイル (./output/final_podcast_30.mp3) が見つかりませんでした。"
+    curl -s "http://${HOST}/sendMattermost.php?sendMessage=【エラー】コピー元のファイル (./output/final_podcast_30.mp3) が見つかりませんでした。"
 fi
 
 if [ -f "./output/final_podcast_45.mp3" ]; then
@@ -79,6 +82,7 @@ if [ -f "./output/final_podcast_45.mp3" ]; then
     echo "コピーとリネームが完了しました！ -> ${DEST_DIR}45.mp3"
 else
     echo "【エラー】コピー元のファイル (./output/final_podcast_45.mp3) が見つかりませんでした。"
+    curl -s "http://${HOST}/sendMattermost.php?sendMessage=【エラー】コピー元のファイル (./output/final_podcast_45.mp3) が見つかりませんでした。"
 fi
 
 echo "ラジオ配信スクリプトが完了しました。"

@@ -87,6 +87,7 @@ function makeWav($playListText = '', $outputFilename = 'output.wav'){
           echo "成功: {$fileName} を保存しました。\n";
       } else {
           echo "失敗: {$fileName} の生成に失敗しました。\n";
+          getEcho("/exec/sendMattermost.php?sendMessage=失敗: {$fileName} の生成に失敗しました。");
       }
   }
 
@@ -116,6 +117,29 @@ function makeWav($playListText = '', $outputFilename = 'output.wav'){
 
       echo "音声ファイルが生成されました: /output/{$outputFilename}\n";
   } else {
-      echo "音声ファイルが生成されませんでした。\n";
+      echo "次の音声ファイルは生成されませんでした。: /output/{$outputFilename}\n";
+      getEcho("/exec/sendMattermost.php?sendMessage=次の音声ファイルは生成されませんでした。: /output/{$outputFilename}");
   }
+}
+
+/**
+ * ローカル内の他PHPファイルの実行関数
+ *
+ * @param $execPath 実行するPHPファイルのパス
+ * @return string 出力内容
+ */
+function getEcho ($execPath = '/index.php') {
+  $httpHost = $_SERVER['HTTP_HOST'] ?? 'localhost';
+
+  // http://localhost/exec/0-makePrompt/00.php のようなURLを組み立てる
+  $url = 'http://' . $httpHost . $execPath;
+
+  // HTTP経由でファイルを取得（別リクエストとして実行される）
+  $output = @file_get_contents($url);
+
+  if ($output === false) {
+    return 'Error: 読み込みに失敗しました (' . $url . ')';
+  }
+
+  return $output;
 }
