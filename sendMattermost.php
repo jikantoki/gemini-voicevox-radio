@@ -73,5 +73,5 @@ function sendMattermostMessage(string $message, string $username = 'Bot', ?strin
     return $result;
 }
 
-sendMattermostMessage("@all {$sendMessage}", 'ねるるラジオログ', "http://{$_SERVER['HTTP_HOST']}/logo.jpg");
+sendMattermostMessage("{$sendMessage}", 'ねるるラジオログ', "http://{$_SERVER['HTTP_HOST']}/logo.jpg");
 echo "通知を送信しました: {$sendMessage}";
