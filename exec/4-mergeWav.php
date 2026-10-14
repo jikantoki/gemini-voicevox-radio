@@ -24,7 +24,7 @@ function mixAudioWithOpEd(string $opMp3, string $talkWav, string $bgmMp3, string
     foreach ($files as $file) {
         if (!file_exists($file)) {
             echo "エラー: ファイルが見つかりません -> {$file}\n";
-            getEcho("/exec/sendMattermost.php?sendMessage=エラー: ファイルが見つかりません -> {$file}");
+            getEcho("/sendMattermost.php?sendMessage=エラー: ファイルが見つかりません -> {$file}");
             return false;
         }
     }
@@ -84,7 +84,7 @@ function mixAudioWithOpEd(string $opMp3, string $talkWav, string $bgmMp3, string
         return true;
     } else {
         echo "エラー: 合成に失敗しました（コード: {$execReturnCode}）。\n";
-        getEcho("/exec/sendMattermost.php?sendMessage=エラー: 合成に失敗しました（コード: {$execReturnCode}）。");
+        getEcho("/sendMattermost.php?sendMessage=エラー: 合成に失敗しました（コード: {$execReturnCode}）。");
         echo "詳細ログ:\n" . implode("\n", $execOutput) . "\n";
         return false;
     }

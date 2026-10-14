@@ -87,7 +87,7 @@ function makeWav($playListText = '', $outputFilename = 'output.wav'){
           echo "成功: {$fileName} を保存しました。\n";
       } else {
           echo "失敗: {$fileName} の生成に失敗しました。\n";
-          getEcho("/exec/sendMattermost.php?sendMessage=失敗: {$fileName} の生成に失敗しました。");
+          getEcho("/sendMattermost.php?sendMessage=失敗: {$fileName} の生成に失敗しました。");
       }
   }
 
@@ -118,7 +118,7 @@ function makeWav($playListText = '', $outputFilename = 'output.wav'){
       echo "音声ファイルが生成されました: /output/{$outputFilename}\n";
   } else {
       echo "次の音声ファイルは生成されませんでした。: /output/{$outputFilename}\n";
-      getEcho("/exec/sendMattermost.php?sendMessage=次の音声ファイルは生成されませんでした。: /output/{$outputFilename}");
+      getEcho("/sendMattermost.php?sendMessage=次の音声ファイルは生成されませんでした。: /output/{$outputFilename}");
   }
 }
 

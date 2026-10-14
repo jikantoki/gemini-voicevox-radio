@@ -96,12 +96,12 @@ function makeText ($prompt = '') {
     //   continue;
     // }
     if ($errCode == 429 || $errCode == 503) {
-      echo "${requestCnt}番のキーは${errCode}エラーのため、別のキーで再実行します\n";
-      getEcho("/exec/sendMattermost.php?sendMessage=${requestCnt}番のキーは${errCode}エラーのため、別のキーで再実行します");
+      echo "{$requestCnt}番のキーは{$errCode}エラーのため、別のキーで再実行します\n";
+      getEcho("/sendMattermost.php?sendMessage={$requestCnt}番のキーは{$errCode}エラーのため、別のキーで再実行します");
       // 3秒待って、APIキーを変えて再試行
       if(count($API_KEYs) - 1 <= $requestCnt) {
         echo "どのAPIキーでもリクエストを実行できませんでした\n";
-        getEcho("/exec/sendMattermost.php?sendMessage=どのAPIキーでもリクエストを実行できませんでした");
+        getEcho("/sendMattermost.php?sendMessage=どのAPIキーでもリクエストを実行できませんでした");
         return json_encode($json, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
       }
       sleep(3);
