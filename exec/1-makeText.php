@@ -13,16 +13,16 @@ $prompt30 = getEcho('/exec/0-makePrompt/30.php');
 /** 45分のニュース原稿プロンプト */
 $prompt45 = getEcho('/exec/0-makePrompt/45.php');
 
-$text00 = makeText($prompt00);
+$text00 = makeText($prompt00, 0);
 outputToFile('00.txt', $text00);
 
-$text15 = makeText($prompt15);
+$text15 = makeText($prompt15, 15);
 outputToFile('15.txt', $text15);
 
-$text30 = makeText($prompt30);
+$text30 = makeText($prompt30, 30);
 outputToFile('30.txt', $text30);
 
-$text45 = makeText($prompt45);
+$text45 = makeText($prompt45, 45);
 outputToFile('45.txt', $text45);
 
 echo "00.txt, 15.txt, 30.txt, 45.txt にニュース原稿を保存しました。\n";
@@ -31,9 +31,10 @@ echo "00.txt, 15.txt, 30.txt, 45.txt にニュース原稿を保存しました�
  * Geminiに投げる
  *
  * @param string $prompt AIに投げるプロンプト
+ * @param integer $min 放送時刻（分）
  * @return string ニュース原稿
  */
-function makeText ($prompt = '') {
+function makeText ($prompt = '', $min = 0) {
   global $API_KEYs;
 
   /** HTTPホスト */
@@ -97,11 +98,10 @@ function makeText ($prompt = '') {
     // }
     if ($errCode == 429 || $errCode == 503) {
       echo "{$requestCnt}番のキーは{$errCode}エラーのため、別のキーで再実行します\n";
-      getEcho("/sendMattermost.php?sendMessage={$requestCnt}番のキーは{$errCode}エラーのため、別のキーで再実行します");
       // 3秒待って、APIキーを変えて再試行
       if(count($API_KEYs) - 1 <= $requestCnt) {
-        echo "どのAPIキーでもリクエストを実行できませんでした\n";
-        getEcho("/sendMattermost.php?sendMessage=どのAPIキーでもリクエストを実行できませんでした");
+        echo "次の{$min}分に放送する原稿作成について、どのAPIキーでもリクエストを実行できませんでした\n";
+        getEcho("/sendMattermost.php?sendMessage=次の{$min}分に放送する原稿作成について、どのAPIキーでもリクエストを実行できませんでした");
         return json_encode($json, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
       }
       sleep(3);
