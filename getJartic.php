@@ -132,7 +132,19 @@ foreach ($features as $feature) {
 if (empty($messages)) {
     $outputJson['datas'][] = ["message" => "現在、該当する渋滞・通行規制情報はありません。"];
 } else {
+    // 年単位でずっと続いているものに関しては非表示
+    $exceptMessages = [
+        "【都心環状線】（内回） 新富町出口で工事のため、通行止",
+        "【都心環状線】（外回） 新富町出口で工事のため、通行止",
+        "【Ｋ６号川崎線】（上り） 川崎浮島ＪＣＴで工事のため、通行止",
+        "【高速八重洲線】（北行） 西銀座で工事のため、通行止",
+        "【高速八重洲線】（南行） 西銀座→西銀座出口で工事のため、通行止",
+    ];
     foreach ($messages as $message) {
+        // $exceptMessagesに入っている文言と完全一致する場合は、メッセージを追加せずにcontinueする
+        if (in_array($message, $exceptMessages, true)) {
+            continue;
+        }
         $outputJson['datas'][] = $message;
     }
 }
