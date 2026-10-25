@@ -484,6 +484,9 @@ $pickupList = [
     "沼の深さを初心者に伝える布教トーク",
 ];
 
+/** 天気データの取得 */
+$myBlogPickup = getEcho('/getWordPress.php');
+
 $randomKeys = array_rand($pickupList, 3);
 $pickup = '';
 $pickupArray = [];
@@ -495,6 +498,7 @@ foreach ($randomKeys as $key) {
 if (file_exists($filename)) {
     $prompt = file_get_contents($filename);
     $prompt = str_replace("<!-- 今日のお題 -->", $pickup, $prompt);
+    $prompt = str_replace("<!-- 今日のブログピックアップ -->", $myBlogPickup, $prompt);
     outputToFile("/buffer/45-pickup.txt", json_encode($pickupArray, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
 
     echo $prompt . "\n\n" . "放送開始時に、時刻は" . $hour . "時45分になりました。を読み上げてください。";
@@ -513,4 +517,26 @@ function outputToFile ($filename = '', $content = '') {
   $filePath = $_SERVER['DOCUMENT_ROOT'] . $filename;
   $content = str_replace('\n', "\n", $content);
   return file_put_contents($filePath, $content);
+}
+
+/**
+ * ローカル内の他PHPファイルの実行関数
+ *
+ * @param $execPath 実行するPHPファイルのパス
+ * @return string 出力内容
+ */
+function getEcho ($execPath = '/index.php') {
+  $httpHost = $_SERVER['HTTP_HOST'] ?? 'localhost';
+
+  // http://localhost/exec/0-makePrompt/00.php のようなURLを組み立てる
+  $url = 'http://' . $httpHost . $execPath;
+
+  // HTTP経由でファイルを取得（別リクエストとして実行される）
+  $output = @file_get_contents($url);
+
+  if ($output === false) {
+    return 'Error: 読み込みに失敗しました (' . $url . ')';
+  }
+
+  return $output;
 }

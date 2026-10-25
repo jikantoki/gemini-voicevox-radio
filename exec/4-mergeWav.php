@@ -117,20 +117,19 @@ if ($minute >= $liveStartMinute) {
 
 // 時間帯に応じて適切なプロンプトファイルを選択
 if ($hour >= 0 && $hour < 4) {
-    $opening   = '/assets/jingle/ねるるの眠れない話_lofi.mp3';
+    $opening = '/assets/jingle/ねるるの眠れない話_lofi.mp3';
     $title = 'ねるるの眠れない話';
 } elseif ($hour >= 4 && $hour < 10) {
-    $opening   = '/assets/jingle/ネルルラジオ.mp3';
+    $opening = '/assets/jingle/ネルルラジオ.mp3';
     $title = 'オハラジオ';
 } elseif ($hour >= 10 && $hour < 23) {
-    $opening   = '/assets/jingle/エンカウント・チバ.mp3';
-    $title = 'ねるるの眠れない話';
+    $opening = '/assets/jingle/エンカウント・チバ.mp3';
     $title = 'エンカウント・チバ';
 } elseif ($hour >= 23 && $hour < 24) {
-    $opening   = '/assets/jingle/ねるるの眠れない話_lofi.mp3';
+    $opening = '/assets/jingle/ねるるの眠れない話_lofi.mp3';
     $title = 'ねるるの眠れない話';
 } else {
-    $opening   = '/assets/jingle/ネルルラジオ.mp3';
+    $opening = '/assets/jingle/ネルルラジオ.mp3';
     $title = 'フリートーク';
 }
 
