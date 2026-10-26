@@ -486,6 +486,8 @@ $pickupList = [
 
 /** 天気データの取得 */
 $myBlogPickup = getEcho('/getWordPress.php');
+$myBlogArray = json_decode($myBlogPickup, true);
+$myBlogTitle = $myBlogArray[0]['title'];
 
 $randomKeys = array_rand($pickupList, 3);
 $pickup = '';
@@ -494,6 +496,7 @@ foreach ($randomKeys as $key) {
     $pickup .= "'{$pickupList[$key]}', ";
     $pickupArray[] = $pickupList[$key];
 }
+$pickupArray[] = "ブログピックアップ: {$myBlogTitle}";
 
 if (file_exists($filename)) {
     $prompt = file_get_contents($filename);
