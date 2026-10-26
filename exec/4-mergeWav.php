@@ -92,10 +92,20 @@ function mixAudioWithOpEd(string $opMp3, string $talkWav, string $bgmMp3, string
     }
 }
 
+// 時間帯に応じて適切なBGMを選択
+if ($hour >= 0 && $hour < 4) {
+    $bgm = '/assets/bgm/ノクターンop9-2.mp3';
+} elseif ($hour >= 4 && $hour < 23) {
+    $bgm = '/assets/bgm/ねるるミュージックアカデミーBGM.mp3';
+} elseif ($hour >= 23 && $hour < 24) {
+    $bgm = '/assets/bgm/ノクターンop9-2.mp3';
+} else {
+    $bgm = '/assets/bgm/bgm1.mp3';
+}
+
 // 00分放送
 $opening   = '/assets/jingle/ねるるミュージックアカデミー.mp3';
 $talkWav   = '/output/00.wav'; // 5〜10分のトークWav
-$bgm       = '/assets/bgm/bgm1.mp3';   // 短くてもループし、長くても自動カットされます
 $ending    = '/assets/jingle/ネルルラジオ_lofi.mp3';
 $outputMp3 = '/output/final_podcast_00.mp3';
 $title = 'ねるるミュージックアカデミー';
@@ -114,37 +124,50 @@ if ($minute >= $liveStartMinute) {
     $hour += 1;
 }
 
-
 // 時間帯に応じて適切なプロンプトファイルを選択
 if ($hour >= 0 && $hour < 4) {
     $opening = '/assets/jingle/ねるるの眠れない話_lofi.mp3';
     $title = 'ねるるの眠れない話';
+    $bgm = '/assets/bgm/ねるるの眠れない話BGM.mp3';
 } elseif ($hour >= 4 && $hour < 10) {
     $opening = '/assets/jingle/ネルルラジオ.mp3';
     $title = 'オハラジオ';
+    $bgm = '/assets/bgm/オハラジオBGM.mp3';
 } elseif ($hour >= 10 && $hour < 23) {
     $opening = '/assets/jingle/エンカウント・チバ.mp3';
-    $title = 'エンカウント・チバ';
+    $title = 'サボさんの千葉来ません？';
+    $bgm = '/assets/bgm/ウチボウ Go!.mp3';
 } elseif ($hour >= 23 && $hour < 24) {
     $opening = '/assets/jingle/ねるるの眠れない話_lofi.mp3';
     $title = 'ねるるの眠れない話';
+    $bgm = '/assets/bgm/ねるるの眠れない話BGM.mp3';
 } else {
     $opening = '/assets/jingle/ネルルラジオ.mp3';
     $title = 'フリートーク';
+    $bgm = '/assets/bgm/bgm1.mp3';
 }
 
 $talkWav   = '/output/15.wav'; // 5〜10分のトークWav
-$bgm       = '/assets/bgm/bgm2.mp3';   // 短くてもループし、長くても自動カットされます
 $ending    = '/assets/jingle/ネルルラジオ_lofi.mp3';
 $outputMp3 = '/output/final_podcast_15.mp3';
 
 // 実行
 mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 1, $title);
 
+// 時間帯に応じて適切なBGMを選択
+if ($hour >= 0 && $hour < 4) {
+    $bgm = '/assets/bgm/ノクターンop9-2.mp3';
+} elseif ($hour >= 4 && $hour < 23) {
+    $bgm = '/assets/bgm/ネルラジニュースBGM.mp3';
+} elseif ($hour >= 23 && $hour < 24) {
+    $bgm = '/assets/bgm/ノクターンop9-2.mp3';
+} else {
+    $bgm = '/assets/bgm/bgm1.mp3';
+}
+
 // 30分放送
 $opening   = '/assets/jingle/ネルルラジオ.mp3';
 $talkWav   = '/output/30.wav'; // 5〜10分のトークWav
-$bgm       = '/assets/bgm/bgm3.mp3';   // 短くてもループし、長くても自動カットされます
 $ending    = '/assets/jingle/ネルルラジオ_lofi.mp3';
 $outputMp3 = '/output/final_podcast_30.mp3';
 $title = 'ネルラジニュース';
@@ -152,10 +175,20 @@ $title = 'ネルラジニュース';
 // 実行
 mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 1, $title);
 
+// 時間帯に応じて適切なBGMを選択
+if ($hour >= 0 && $hour < 4) {
+    $bgm = '/assets/bgm/ジムノペディ第一曲.mp3';
+} elseif ($hour >= 4 && $hour < 23) {
+    $bgm = '/assets/bgm/ガジェットマニアBGM.mp3';
+} elseif ($hour >= 23 && $hour < 24) {
+    $bgm = '/assets/bgm/ジムノペディ第一曲.mp3';
+} else {
+    $bgm = '/assets/bgm/bgm1.mp3';
+}
+
 // 45分放送
 $opening   = '/assets/jingle/ガジェットマニア.mp3';
 $talkWav   = '/output/45.wav'; // 5〜10分のトークWav
-$bgm       = '/assets/bgm/bgm4.mp3';   // 短くてもループし、長くても自動カットされます
 $ending    = '/assets/jingle/ネルルラジオ_lofi.mp3';
 $outputMp3 = '/output/final_podcast_45.mp3';
 $title = 'ガジェットマニア';
