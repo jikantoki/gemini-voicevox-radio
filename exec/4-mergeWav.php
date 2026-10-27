@@ -115,7 +115,7 @@ $outputMp3 = '/output/final_podcast_00.mp3';
 $title = 'ねるるミュージックアカデミー';
 
 // 実行
-mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.7, $title);
+mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.5, $title);
 
 // 15分放送
 /** 放送開始時刻（分） */
@@ -155,7 +155,7 @@ $ending    = '/assets/jingle/ネルルラジオ_lofi.mp3';
 $outputMp3 = '/output/final_podcast_15.mp3';
 
 // 実行
-mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.7, $title);
+mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.5, $title);
 
 // 時間帯に応じて適切なBGMを選択
 if ($hour >= 0 && $hour < 4) {
@@ -185,7 +185,7 @@ $outputMp3 = '/output/final_podcast_30.mp3';
 $title = 'ネルラジニュース';
 
 // 実行
-mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.7, $title);
+mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.5, $title);
 
 // 時間帯に応じて適切なBGMを選択
 if ($hour >= 0 && $hour < 4) {
@@ -214,7 +214,7 @@ $outputMp3 = '/output/final_podcast_45.mp3';
 $title = 'ガジェットマニア';
 
 // 実行
-mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.7, $title);
+mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.5, $title);
 
 /**
  * ローカル内の他PHPファイルの実行関数
