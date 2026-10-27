@@ -159,11 +159,11 @@ mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.5, $title);
 
 // 時間帯に応じて適切なBGMを選択
 if ($hour >= 0 && $hour < 4) {
-    $bgm = '/assets/bgm/ノクターンop9-2.mp3';
+    $bgm = '/assets/bgm/ネルラジニュースBGM-LoFi.mp3';
 } elseif ($hour >= 4 && $hour < 23) {
     $bgm = '/assets/bgm/ネルラジニュースBGM.mp3';
 } elseif ($hour >= 23 && $hour < 24) {
-    $bgm = '/assets/bgm/ノクターンop9-2.mp3';
+    $bgm = '/assets/bgm/ネルラジニュースBGM-LoFi.mp3';
 } else {
     $bgm = '/assets/bgm/bgm1.mp3';
 }
