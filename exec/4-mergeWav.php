@@ -92,6 +92,10 @@ function mixAudioWithOpEd(string $opMp3, string $talkWav, string $bgmMp3, string
     }
 }
 
+date_default_timezone_set('Asia/Tokyo');
+$hour = (int)date('G'); // 現在の時間を取得（0〜23の整数）
+$minute = (int)date('i'); // 現在の分を取得（0〜59の整数）
+
 // 時間帯に応じて適切なBGMを選択
 if ($hour >= 0 && $hour < 4) {
     $bgm = '/assets/bgm/ノクターンop9-2.mp3';
@@ -114,10 +118,9 @@ $title = 'ねるるミュージックアカデミー';
 mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 1, $title);
 
 // 15分放送
-date_default_timezone_set('Asia/Tokyo');
+/** 放送開始時刻（分） */
 $hour = (int)date('G'); // 現在の時間を取得（0〜23の整数）
 $minute = (int)date('i'); // 現在の分を取得（0〜59の整数）
-/** 放送開始時刻（分） */
 $liveStartMinute = 15;
 if ($minute >= $liveStartMinute) {
     // 放送開始時刻を過ぎている場合は、次の時間帯のプロンプトを使用
@@ -166,6 +169,15 @@ if ($hour >= 0 && $hour < 4) {
 }
 
 // 30分放送
+/** 放送開始時刻（分） */
+$liveStartMinute = 30;
+$hour = (int)date('G'); // 現在の時間を取得（0〜23の整数）
+$minute = (int)date('i'); // 現在の分を取得（0〜59の整数）
+if ($minute >= $liveStartMinute) {
+    // 放送開始時刻を過ぎている場合は、次の時間帯のプロンプトを使用
+    $hour += 1;
+}
+
 $opening   = '/assets/jingle/ネルルラジオ.mp3';
 $talkWav   = '/output/30.wav'; // 5〜10分のトークWav
 $ending    = '/assets/jingle/ネルルラジオ_lofi.mp3';
@@ -187,6 +199,14 @@ if ($hour >= 0 && $hour < 4) {
 }
 
 // 45分放送
+/** 放送開始時刻（分） */
+$liveStartMinute = 45;
+$hour = (int)date('G'); // 現在の時間を取得（0〜23の整数）
+$minute = (int)date('i'); // 現在の分を取得（0〜59の整数）
+if ($minute >= $liveStartMinute) {
+    // 放送開始時刻を過ぎている場合は、次の時間帯のプロンプトを使用
+    $hour += 1;
+}
 $opening   = '/assets/jingle/ガジェットマニア.mp3';
 $talkWav   = '/output/45.wav'; // 5〜10分のトークWav
 $ending    = '/assets/jingle/ネルルラジオ_lofi.mp3';
