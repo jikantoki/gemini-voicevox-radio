@@ -353,14 +353,17 @@ $pickupList = [
 ];
 $randomKeys = array_rand($pickupList, 3);
 $pickup = '';
+$pickupArray = [];
 foreach ($randomKeys as $key) {
     $pickup .= "'{$pickupList[$key]}', ";
+    $pickupArray[] = $pickupList[$key];
 }
 
 if (file_exists($filename)) {
     $prompt = file_get_contents($filename);
     if($noon == 'hiru') {
         $prompt = str_replace("<!-- 今日のお題 -->", $pickup, $prompt);
+        outputToFile("/buffer/15-sabochiba-pickup.txt", json_encode($pickupArray, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
     }
 
     echo $prompt . "\n\n" . "放送開始時に、時刻は" . $hour . "時15分になりました。を読み上げてください。";
