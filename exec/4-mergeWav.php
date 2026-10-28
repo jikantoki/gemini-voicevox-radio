@@ -169,6 +169,16 @@ $outputMp3 = '/output/final_podcast_15.mp3';
 // 実行
 mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.5, $title, 'ねるるラジオ', $thumbnail);
 
+// 30分放送
+/** 放送開始時刻（分） */
+$liveStartMinute = 30;
+$hour = (int)date('G'); // 現在の時間を取得（0〜23の整数）
+$minute = (int)date('i'); // 現在の分を取得（0〜59の整数）
+if ($minute >= $liveStartMinute) {
+    // 放送開始時刻を過ぎている場合は、次の時間帯のプロンプトを使用
+    $hour += 1;
+}
+
 // 時間帯に応じて適切なBGMを選択
 if ($hour >= 0 && $hour < 4) {
     $bgm = '/assets/bgm/ネルラジニュースBGM-LoFi.mp3';
@@ -178,16 +188,6 @@ if ($hour >= 0 && $hour < 4) {
     $bgm = '/assets/bgm/ネルラジニュースBGM-LoFi.mp3';
 } else {
     $bgm = '/assets/bgm/bgm1.mp3';
-}
-
-// 30分放送
-/** 放送開始時刻（分） */
-$liveStartMinute = 30;
-$hour = (int)date('G'); // 現在の時間を取得（0〜23の整数）
-$minute = (int)date('i'); // 現在の分を取得（0〜59の整数）
-if ($minute >= $liveStartMinute) {
-    // 放送開始時刻を過ぎている場合は、次の時間帯のプロンプトを使用
-    $hour += 1;
 }
 
 $opening   = '/assets/jingle/ネルルラジオ.mp3';
@@ -200,6 +200,16 @@ $title = 'ネルラジニュース';
 // 実行
 mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.5, $title, 'ねるるラジオ', $thumbnail);
 
+// 45分放送
+/** 放送開始時刻（分） */
+$liveStartMinute = 45;
+$hour = (int)date('G'); // 現在の時間を取得（0〜23の整数）
+$minute = (int)date('i'); // 現在の分を取得（0〜59の整数）
+if ($minute >= $liveStartMinute) {
+    // 放送開始時刻を過ぎている場合は、次の時間帯のプロンプトを使用
+    $hour += 1;
+}
+
 // 時間帯に応じて適切なBGMを選択
 if ($hour >= 0 && $hour < 4) {
     $bgm = '/assets/bgm/ジムノペディ第一曲.mp3';
@@ -211,15 +221,6 @@ if ($hour >= 0 && $hour < 4) {
     $bgm = '/assets/bgm/bgm1.mp3';
 }
 
-// 45分放送
-/** 放送開始時刻（分） */
-$liveStartMinute = 45;
-$hour = (int)date('G'); // 現在の時間を取得（0〜23の整数）
-$minute = (int)date('i'); // 現在の分を取得（0〜59の整数）
-if ($minute >= $liveStartMinute) {
-    // 放送開始時刻を過ぎている場合は、次の時間帯のプロンプトを使用
-    $hour += 1;
-}
 $opening   = '/assets/jingle/ガジェットマニア.mp3';
 $talkWav   = '/output/45.wav'; // 5〜10分のトークWav
 $ending    = '/assets/jingle/ネルルラジオ_lofi.mp3';
