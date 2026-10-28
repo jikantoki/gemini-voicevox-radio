@@ -4,7 +4,7 @@
 > AIによる24時間ラジオ番組制作・配信を全自動で実現する All-in-One 自動放送システム
 
 [![PHP Version](https://img.shields.io/badge/PHP-8.1+-777BB4?logo=php&logoColor=white)](#必要環境)
-[![LLM](https://img.shields.io/badge/LLM-Google%20Gemini%20API-4285F4?logo=google&logoColor=white)](#主な機能)
+[![LLM](https://img.shields.io/badge/LLM-Gemini%20%2F%20Ollama-4285F4?logo=google&logoColor=white)](#主な機能)
 [![TTS](https://img.shields.io/badge/TTS-VOICEVOX-84A59D)](#主な機能)
 [![Audio](https://img.shields.io/badge/Audio-FFmpeg%20%2F%20FFprobe-007808?logo=ffmpeg&logoColor=white)](#主な機能)
 [![Broadcasting](https://img.shields.io/badge/Radio-AzuraCast-5E503F)](#主な機能)
@@ -38,8 +38,9 @@
   - **ニュース RSS**: IT、自動車、バイク、地域、アニメ等の複数フィードからランダムに最新トピックを抽出。
   - **WordPress REST API**: 自身のブログ最新記事を取得し、番組内の特集コーナーで自動解説。
   - **巨大な専門知識辞書**: DTM/音楽機材、千葉県全域の鉄道駅・名所、自作PC/Linux/Tor/インフラなどの専門用語数千ワードをランダムピックアップ。
-- 🛡️ **Gemini API キー自動ローテーション＆フォールバック**
-  - 無料枠の429エラー（レートリミット）や503エラー（高負荷）を検知すると、自動的に待機＆複数設定した予備APIキーへフォールバックして処理を継続。
+- 🛡️ **Gemini API キー自動ローテーション ＆ Ollama / OpenAI互換LLMフォールバック**
+  - 無料枠の429エラー（レートリミット）検知時は設定された複数APIキーへ自動ローテーション。
+  - 503エラー（高負荷）等でGeminiへの問い合わせが失敗した場合は、同一プロンプトを用いて**Ollama / OpenAI API互換の外部・ローカルLLM（Open WebUI等）へ自動フォールバック**し、台本生成処理を中断させずに継続。
 - ⚡ **バイナリレベルでの高速 WAV 結合**
   - VOICEVOXで生成された数十〜数百行のセリフWAVを、外部ツールを使わずPHPで直接WAVヘッダー（44バイト）を解析・RIFFチャンクサイズを `pack('V')` で再計算し、瞬時に1本の長尺音声に結合。
 - 🎚️ **FFmpeg によるプロ仕様のマスタリング & 放送尺自動補正**
@@ -74,7 +75,7 @@ flowchart TD
     subgraph PIPELINE["番組生成パイプライン"]
         direction TB
         STEP0["0. 動的プロンプト生成<br>(exec/0-makePrompt/*.php)"]
-        STEP1["1. 台本生成<br>(exec/1-makeText.php)<br>Google Gemini API"]
+        STEP1["1. 台本生成<br>(exec/1-makeText.php)<br>Google Gemini API<br><i>(フォールバック: Ollama / OpenAI互換LLM)</i>"]
         STEP2["2. 台本パース & 発話リスト化<br>(exec/2-makeVoiceVoxRequest.php)"]
         STEP3["3. 音声合成 & WAVバイナリ結合<br>(exec/3-makeWav.php)<br>VOICEVOX Engine API"]
         STEP4["4. 音声ミックス & マスタリング<br>(exec/4-mergeWav.php)<br>FFmpeg (OP+BGM+トーク+ED+atempo)"]
@@ -127,7 +128,7 @@ gemini-api/
 │   │   └── 45.php                # 45分枠（ガジェットマニア）用プロンプト生成
 │   ├── func/
 │   │   └── makeWavFunc.php       # VOICEVOX API (/audio_query, /synthesis) 呼び出し関数
-│   ├── 1-makeText.php            # Step 1: Gemini API で原稿を生成
+│   ├── 1-makeText.php            # Step 1: Gemini API で原稿を生成（失敗時はOllama/OpenAI互換LLMへフォールバック）
 │   ├── 2-makeVoiceVoxRequest.php # Step 2: 原稿をパースしてVOICEVOX用発話JSONに変換
 │   ├── 3-makeWav.php             # Step 3: VOICEVOXで音声生成しWAVヘッダー結合
 │   └── 4-mergeWav.php            # Step 4: FFmpegでOP/ED/BGM/トーク結合＆尺自動調整
@@ -168,6 +169,7 @@ gemini-api/
 - **VOICEVOX Engine**: ローカルまたはネットワーク上で稼働する VOICEVOX HTTP API サーバー（ポート `50021` 等）
 - **FFmpeg / FFprobe**: 最新版推奨（`atempo`, `amix`, `concat`, `aresample` フィルタ対応）
 - **Google Gemini API Key**: [Google AI Studio](https://aistudio.google.com/) にて取得（予備キー設定推奨）
+- **Ollama / OpenAI互換LLMサーバー（任意）**: Gemini障害時のフォールバック先として利用する場合（Ollama、Open WebUI、vLLM、LM Studio等）
 - **配信環境（任意）**: [AzuraCast](https://www.azuracast.com/)、Icecast、Nextcloud 等
 
 ---
@@ -219,6 +221,11 @@ $INCOMING_WEBHOOK_URL = 'https://mattermost.example.com/hooks/xxxxxx';
 // オウンドメディア / ブログ連携（任意）
 $WORDPRESS_URL = 'https://your-blog.example.com';
 $WORDPRESS_CATEGORY_ID = ['1', '2'];
+
+// Ollama / OpenAI互換LLM設定（Gemini障害時のフォールバック先・任意）
+$LLM_BASE_URL = 'https://ollama.example.com'; // 接続先URL
+$LLM_API_KEY  = 'sk-XXXXXXXXXXXXXXXXXX';     // APIキー
+$MODEL_NAME   = 'Gemma-4-26B-A4B';            // 使用モデル名
 ```
 
 ### 3. ディレクトリの権限設定
@@ -324,6 +331,24 @@ if ($talkDuration > $limitSeconds) {
 - トーク音量を適切にブースト（`volume=9.5`）しつつ 48kHz Stereo へリサンプリング
 - BGMをループ再生（`-stream_loop -1`）し、トーク終了と同時にカット（`amix=duration=first`）
 - カバーアート画像（`attached_pic`）およびID3v2メタデータを同時出力
+
+### 4. Gemini 障害時の Ollama / OpenAI互換 LLM への自動フォールバック
+
+定時放送システムでは、クラウドAIサービスのダウンや過負荷による台本生成の停止は放送事故（無音や再放送）に直結します。
+本システムでは `/exec/1-makeText.php` において、Gemini APIへの問い合わせで 503 エラー（高負荷・一時障害）等を検知した際に、同一のプロンプトをそのまま引き継いでローカルや外部の Ollama / OpenAI API互換サーバー（Open WebUI等）へ自動フェイルオーバーする仕組みを実装しています。
+
+- **同一プロンプトでの即時フォールバック**: Gemini用に動的生成された長文プロンプトをそのまま互換APIの `/api/chat/completions` 形式へマッピングしてリクエスト。
+- **ストリーミングレスポンス（SSE）の解析**: `stream: true` で返却される Server-Sent Events のチャンクデータ（`data: {"choices":[{"delta":{"content":"..."}}]}`）を逐次パースして完全な台本テキストを復元。
+- **Mattermost リアルタイム通知**: Geminiからの切り替え時や生成成功/失敗時にWebhookで通知を送信し、運用の可視性を確保。
+
+```php
+// exec/1-makeText.php: 503エラー検知時にOllama/OpenAI互換LLMへ同一プロンプトで切り替え
+if ($errCode == 503) {
+    echo "{$errCode}エラー（アクセス過多）のため、LLMでの生成に切り替えます\n";
+    echo "次の{$min}分に放送する原稿作成は、GeminiがビジーなためLLMでの生成に切り替えます\n";
+    return askLocalAI($prompt);
+}
+```
 
 ---
 
