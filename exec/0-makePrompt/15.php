@@ -370,3 +370,16 @@ if (file_exists($filename)) {
 } else {
     echo "Prompt file not found.";
 }
+
+/**
+ * テキストファイルのローカル保存
+ *
+ * @param string $filename 保存するファイル名
+ * @param string $content 保存する内容
+ * @return int|false 保存に成功した場合は書き込んだバイト数、失敗した場合はfalse
+ */
+function outputToFile ($filename = '', $content = '') {
+  $filePath = $_SERVER['DOCUMENT_ROOT'] . $filename;
+  $content = str_replace('\n', "\n", $content);
+  return file_put_contents($filePath, $content);
+}

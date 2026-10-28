@@ -20,6 +20,7 @@ curl -s "http://${HOST}/exec/1-makeText.php"
 echo "台本の作成が完了しました。"
 cat "./buffer/00-pickup.txt" > "${PICKUP_DIR}00-pickup.txt"
 cat "./buffer/45-pickup.txt" > "${PICKUP_DIR}45-pickup.txt"
+cat "./buffer/15-sabochiba-pickup.txt" > "${PICKUP_DIR}15-sabochiba-pickup.txt"
 
 curl -s "http://${HOST}/exec/2-makeVoiceVoxRequest.php"
 echo "音声生成リクエストが送信されました。"
