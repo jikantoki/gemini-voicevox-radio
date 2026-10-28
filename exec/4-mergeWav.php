@@ -1,9 +1,10 @@
 <?php
+header('Content-Type: application/json; charset=utf-8');
 
 /**
  * オープニング、トーク(Wav)、BGM(自動ループ/カット)、エンディングを合成して1つのMP3を出力する
  */
-function mixAudioWithOpEd(string $opMp3, string $talkWav, string $bgmMp3, string $edMp3, string $outputMp3, float $bgmVolume = 0.15, string $songTitle = '', string $songArtist = 'ねるるラジオ'): bool
+function mixAudioWithOpEd(string $opMp3, string $talkWav, string $bgmMp3, string $edMp3, string $outputMp3, float $bgmVolume = 0.15, string $songTitle = '', string $songArtist = 'ねるるラジオ', string $thumbnailPath = '/assets/img/default.jpg'): bool
 {
     // サーバーのドキュメントルートを取得
     $docRoot = rtrim($_SERVER['DOCUMENT_ROOT'] ?? __DIR__, '/');
@@ -18,6 +19,7 @@ function mixAudioWithOpEd(string $opMp3, string $talkWav, string $bgmMp3, string
     $absBgm    = $getAbsPath($bgmMp3);
     $absEd     = $getAbsPath($edMp3);
     $absOutput = $getAbsPath($outputMp3);
+    $absImage  = $getAbsPath($thumbnailPath);
 
     // 1. ファイルの存在チェック
     $files = [$absOp, $absTalk, $absBgm, $absEd];
@@ -59,17 +61,20 @@ function mixAudioWithOpEd(string $opMp3, string $talkWav, string $bgmMp3, string
     // - [4:a]atrim=end=2[silence] : 生成した無音ソースを2秒でカットして共通パーツ化
     // - concat=n=5 : 「2秒無音」→「OP」→「BGM付きトーク」→「ED」→「2秒無音」の5つを繋ぐ
     $cmd = sprintf(
-        'ffmpeg -y -i %s -i %s -stream_loop -1 -i %s -i %s -f lavfi -i anullsrc=r=48000:cl=stereo -filter_complex ' .
+        'ffmpeg -y -i %s -i %s -stream_loop -1 -i %s -i %s -f lavfi -i anullsrc=r=48000:cl=stereo -i %s -filter_complex ' .
         '"[4:a]atrim=end=2,asplit=2[silence1][silence2];' .
         '[1:a]%s[talk_vol];' .
         '[2:a]volume=%f[bgm_vol];' .
         '[talk_vol][bgm_vol]amix=inputs=2:duration=first[talk_bgm];' .
-        '[silence1][0:a][talk_bgm][3:a][silence2]concat=n=5:v=0:a=1" ' .
-        '-c:a libmp3lame -q:a 2 -metadata title=%s -metadata artist=%s -id3v2_version 3 %s 2>&1',
-        escapeshellarg($absOp),
-        escapeshellarg($absTalk),
-        escapeshellarg($absBgm),
-        escapeshellarg($absEd),
+        '[silence1][0:a][talk_bgm][3:a][silence2]concat=n=5:v=0:a=1[outa]" ' .
+        '-map "[outa]" -map 5:v ' .
+        '-c:a libmp3lame -q:a 2 -c:v mjpeg -disposition:v attached_pic ' .
+        '-metadata title=%s -metadata artist=%s -id3v2_version 3 %s 2>&1',
+        escapeshellarg($absOp),      // 0: OP
+        escapeshellarg($absTalk),    // 1: Talk
+        escapeshellarg($absBgm),     // 2: BGM
+        escapeshellarg($absEd),      // 3: ED
+        escapeshellarg($absImage),   // 5: 画像
         $talkFilter,
         $bgmVolume,
         escapeshellarg($songTitle),
@@ -111,11 +116,12 @@ if ($hour >= 0 && $hour < 4) {
 $opening   = '/assets/jingle/ねるるミュージックアカデミー.mp3';
 $talkWav   = '/output/00.wav'; // 5〜10分のトークWav
 $ending    = '/assets/jingle/ネルルラジオ_lofi.mp3';
+$thumbnail = '/assets/img/ねるるミュージックアカデミー.jpg';
 $outputMp3 = '/output/final_podcast_00.mp3';
 $title = 'ねるるミュージックアカデミー';
 
 // 実行
-mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.5, $title);
+mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.5, $title, 'ねるるラジオ',$thumbnail);
 
 // 15分放送
 /** 放送開始時刻（分） */
@@ -131,22 +137,27 @@ if ($minute >= $liveStartMinute) {
 if ($hour >= 0 && $hour < 4) {
     $opening = '/assets/jingle/ねるるの眠れない話_lofi.mp3';
     $title = 'ねるるの眠れない話';
+    $thumbnail = '/assets/img/ねるるの眠れない話.jpg';
     $bgm = '/assets/bgm/ねるるの眠れない話BGM.mp3';
 } elseif ($hour >= 4 && $hour < 10) {
     $opening = '/assets/jingle/ネルルラジオ.mp3';
     $title = 'オハラジオ';
+    $thumbnail = '/assets/img/オハラジオ.jpg';
     $bgm = '/assets/bgm/オハラジオBGM.mp3';
 } elseif ($hour >= 10 && $hour < 23) {
     $opening = '/assets/jingle/エンカウント・チバ.mp3';
     $title = 'サボさんの千葉来ません？';
+    $thumbnail = '/assets/img/サボ千葉.jpg';
     $bgm = '/assets/bgm/ウチボウ Go!.mp3';
 } elseif ($hour >= 23 && $hour < 24) {
     $opening = '/assets/jingle/ねるるの眠れない話_lofi.mp3';
     $title = 'ねるるの眠れない話';
+    $thumbnail = '/assets/img/ねるるの眠れない話.jpg';
     $bgm = '/assets/bgm/ねるるの眠れない話BGM.mp3';
 } else {
     $opening = '/assets/jingle/ネルルラジオ.mp3';
     $title = 'フリートーク';
+    $thumbnail = '/assets/img/default.jpg';
     $bgm = '/assets/bgm/bgm1.mp3';
 }
 
@@ -155,7 +166,7 @@ $ending    = '/assets/jingle/ネルルラジオ_lofi.mp3';
 $outputMp3 = '/output/final_podcast_15.mp3';
 
 // 実行
-mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.5, $title);
+mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.5, $title, 'ねるるラジオ', $thumbnail);
 
 // 時間帯に応じて適切なBGMを選択
 if ($hour >= 0 && $hour < 4) {
@@ -181,11 +192,12 @@ if ($minute >= $liveStartMinute) {
 $opening   = '/assets/jingle/ネルルラジオ.mp3';
 $talkWav   = '/output/30.wav'; // 5〜10分のトークWav
 $ending    = '/assets/jingle/ネルルラジオ_lofi.mp3';
+$thumbnail = '/assets/img/ネルラジニュース.jpg';
 $outputMp3 = '/output/final_podcast_30.mp3';
 $title = 'ネルラジニュース';
 
 // 実行
-mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.5, $title);
+mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.5, $title, 'ねるるラジオ', $thumbnail);
 
 // 時間帯に応じて適切なBGMを選択
 if ($hour >= 0 && $hour < 4) {
@@ -210,11 +222,12 @@ if ($minute >= $liveStartMinute) {
 $opening   = '/assets/jingle/ガジェットマニア.mp3';
 $talkWav   = '/output/45.wav'; // 5〜10分のトークWav
 $ending    = '/assets/jingle/ネルルラジオ_lofi.mp3';
+$thumbnail = '/assets/img/ガジェットマニア.jpg';
 $outputMp3 = '/output/final_podcast_45.mp3';
 $title = 'ガジェットマニア';
 
 // 実行
-mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.5, $title);
+mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.5, $title, 'ねるるラジオ', $thumbnail);
 
 /**
  * ローカル内の他PHPファイルの実行関数
