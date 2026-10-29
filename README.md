@@ -1,5 +1,7 @@
 # 📻 ねるるラジオ (Neruru Radio)
 
+![サムネイル](./thumbnail.jpg)
+
 > **Google Gemini × VOICEVOX × FFmpeg × AzuraCast**  
 > AIによる24時間ラジオ番組制作・配信を全自動で実現する All-in-One 自動放送システム
 
