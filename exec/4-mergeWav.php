@@ -2,13 +2,22 @@
 header('Content-Type: application/json; charset=utf-8');
 set_time_limit(0); // 無制限に実行できるようにする
 
+// 環境変数の読み込み
+$docRoot = rtrim(!empty($_SERVER['DOCUMENT_ROOT']) ? $_SERVER['DOCUMENT_ROOT'] : dirname(__DIR__), '/\\');
+if (file_exists($docRoot . '/env.php')) {
+    require_once $docRoot . '/env.php';
+}
+if (file_exists($docRoot . '/exec/func/makePodcastRssFunc.php')) {
+    require_once $docRoot . '/exec/func/makePodcastRssFunc.php';
+}
+
 /**
  * オープニング、トーク(Wav)、BGM(自動ループ/カット)、エンディングを合成して1つのMP3を出力する
  */
-function mixAudioWithOpEd(string $opMp3, string $talkWav, string $bgmMp3, string $edMp3, string $outputMp3, float $bgmVolume = 0.15, string $songTitle = '', string $songArtist = 'ねるるラジオ', string $thumbnailPath = '/assets/img/default.jpg'): bool
+function mixAudioWithOpEd(string $opMp3, string $talkWav, string $bgmMp3, string $edMp3, string $outputMp3, float $bgmVolume = 0.15, string $songTitle = '', string $songArtist = 'ねるるラジオ', string $thumbnailPath = '/assets/img/default.jpg', string $comment = ''): bool
 {
     // サーバーのドキュメントルートを取得
-    $docRoot = rtrim($_SERVER['DOCUMENT_ROOT'] ?? __DIR__, '/');
+    $docRoot = rtrim(!empty($_SERVER['DOCUMENT_ROOT']) ? $_SERVER['DOCUMENT_ROOT'] : dirname(__DIR__), '/\\');
 
     // パスを絶対パスに変換するクロージャ
     $getAbsPath = function($path) use ($docRoot) {
@@ -70,7 +79,7 @@ function mixAudioWithOpEd(string $opMp3, string $talkWav, string $bgmMp3, string
         '[silence1][0:a][talk_bgm][3:a][silence2]concat=n=5:v=0:a=1[outa]" ' .
         '-map "[outa]" -map 5:v ' .
         '-c:a libmp3lame -q:a 2 -c:v mjpeg -disposition:v attached_pic ' .
-        '-metadata title=%s -metadata artist=%s -id3v2_version 3 %s 2>&1',
+        '-metadata title=%s -metadata artist=%s -metadata comment=%s -metadata description=%s -id3v2_version 3 %s 2>&1',
         escapeshellarg($absOp),      // 0: OP
         escapeshellarg($absTalk),    // 1: Talk
         escapeshellarg($absBgm),     // 2: BGM
@@ -80,6 +89,8 @@ function mixAudioWithOpEd(string $opMp3, string $talkWav, string $bgmMp3, string
         $bgmVolume,
         escapeshellarg($songTitle),
         escapeshellarg($songArtist),
+        escapeshellarg($comment),
+        escapeshellarg($comment),
         escapeshellarg($absOutput)
     );
 
@@ -94,6 +105,110 @@ function mixAudioWithOpEd(string $opMp3, string $talkWav, string $bgmMp3, string
         echo "エラー: 合成に失敗しました（コード: {$execReturnCode}）。\n";
         getEcho("/sendMattermost.php?sendMessage=エラー: 合成に失敗しました（コード: {$execReturnCode}）。");
         echo "詳細ログ:\n" . implode("\n", $execOutput) . "\n";
+        return false;
+    }
+}
+
+/**
+ * ピックアップファイルからトピックを読み込み、箇条書きテキストとして取得する
+ *
+ * @param string $pickupFileRelPath ピックアップファイルの相対パス
+ * @return string 改行区切りのトピックテキスト
+ */
+function getTopicsAsText(string $pickupFileRelPath): string
+{
+    $docRoot = rtrim(!empty($_SERVER['DOCUMENT_ROOT']) ? $_SERVER['DOCUMENT_ROOT'] : dirname(__DIR__), '/\\');
+    $pickupAbsPath = $docRoot . '/' . ltrim($pickupFileRelPath, '/');
+
+    if (!file_exists($pickupAbsPath)) {
+        return '';
+    }
+
+    $content = file_get_contents($pickupAbsPath);
+    $topics = json_decode($content, true);
+    if (!is_array($topics) || empty($topics)) {
+        return '';
+    }
+
+    $lines = ["【本日のトピック】"];
+    foreach ($topics as $t) {
+        $lines[] = '・' . trim($t);
+    }
+
+    return implode("\n", $lines);
+}
+
+/**
+ * Podcast保存用フォルダに音声ファイルを保存する
+ *
+ * @param string $sourceMp3RelPath 合成されたMP3の相対パス（例: '/output/final_podcast_00.mp3'）
+ * @param string $title 番組タイトル（例: 'ねるるミュージックアカデミー'）
+ * @param int $targetMinute 放送開始分（0, 15, 30, 45）
+ * @return bool 保存成功ならtrue、対象外または失敗ならfalse
+ */
+function saveToPodcasts(string $sourceMp3RelPath, string $title, int $targetMinute): bool
+{
+    global $PODCAST_PATH;
+
+    // 対象番組と保存先サブディレクトリのマッピング
+    $targetDirMap = [
+        'サボさんの千葉来ません？'       => 'sabochiba',
+        'ガジェットマニア'               => 'gadgetmania',
+        'ねるるミュージックアカデミー' => 'musicacademy',
+    ];
+
+    // 対象番組でない場合は何もしない
+    if (!isset($targetDirMap[$title])) {
+        echo "【Podcast】番組「{$title}」はPodcast保存の対象外です。スキップします。\n";
+        return false;
+    }
+
+    if (empty($PODCAST_PATH)) {
+        echo "【Podcastエラー】env.php の \$PODCAST_PATH が設定されていません。\n";
+        getEcho("/sendMattermost.php?sendMessage=【Podcastエラー】env.php の \$PODCAST_PATH が設定されていません。");
+        return false;
+    }
+
+    $docRoot = rtrim(!empty($_SERVER['DOCUMENT_ROOT']) ? $_SERVER['DOCUMENT_ROOT'] : dirname(__DIR__), '/\\');
+    $sourceAbsPath = $docRoot . '/' . ltrim($sourceMp3RelPath, '/');
+
+    if (!file_exists($sourceAbsPath)) {
+        echo "【Podcastエラー】コピー元のファイルが見つかりません -> {$sourceAbsPath}\n";
+        getEcho("/sendMattermost.php?sendMessage=【Podcastエラー】コピー元のファイルが見つかりません -> {$sourceAbsPath}");
+        return false;
+    }
+
+    // 保存先ディレクトリの準備
+    $subDir = $targetDirMap[$title];
+    $destDir = rtrim($PODCAST_PATH, '/') . '/' . $subDir;
+    if (!is_dir($destDir)) {
+        if (!mkdir($destDir, 0777, true) && !is_dir($destDir)) {
+            echo "【Podcastエラー】保存先ディレクトリを作成できませんでした -> {$destDir}\n";
+            getEcho("/sendMattermost.php?sendMessage=【Podcastエラー】保存先ディレクトリを作成できませんでした -> {$destDir}");
+            return false;
+        }
+    }
+
+    // 放送予定日時の計算 (YYYYMMDDHHMM)
+    $now = new DateTime('now', new DateTimeZone('Asia/Tokyo'));
+    $currentMinute = (int)$now->format('i');
+    if ($currentMinute >= $targetMinute) {
+        $now->modify('+1 hour');
+    }
+    $now->setTime((int)$now->format('H'), $targetMinute, 0);
+    $formattedDate = $now->format('YmdHi');
+
+    // ファイル名の生成: 番組名_YYYYMMDDHHMM.mp3
+    $destFileName = sprintf('%s_%s.mp3', $title, $formattedDate);
+    $destFilePath = $destDir . '/' . $destFileName;
+
+    // ファイルコピー
+    if (copy($sourceAbsPath, $destFilePath)) {
+        echo "【Podcast】保存成功 -> {$destFilePath}\n";
+        return true;
+    } else {
+        echo "【Podcastエラー】ファイルのコピーに失敗しました -> {$destFilePath}\n";
+        getEcho("/sendMattermost.php?sendMessage=【Podcastエラー】ファイルのコピーに失敗しました -> {$destFilePath}");
         return false;
     }
 }
@@ -120,9 +235,16 @@ $ending    = '/assets/jingle/ネルルラジオ_lofi.mp3';
 $thumbnail = '/assets/img/ねるるミュージックアカデミー.jpg';
 $outputMp3 = '/output/final_podcast_00.mp3';
 $title = 'ねるるミュージックアカデミー';
+$comment00 = getTopicsAsText('/buffer/00-pickup.txt');
 
 // 実行
-mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.5, $title, 'ねるるラジオ',$thumbnail);
+$res00 = mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.5, $title, 'ねるるラジオ', $thumbnail, $comment00);
+if ($res00) {
+    saveToPodcasts($outputMp3, $title, 0);
+    if (function_exists('generatePodcastXml')) {
+        generatePodcastXml('musicacademy');
+    }
+}
 
 // 15分放送
 /** 放送開始時刻（分） */
@@ -165,9 +287,17 @@ if ($hour >= 0 && $hour < 4) {
 $talkWav   = '/output/15.wav'; // 5〜10分のトークWav
 $ending    = '/assets/jingle/ネルルラジオ_lofi.mp3';
 $outputMp3 = '/output/final_podcast_15.mp3';
+$comment15 = ($title === 'サボさんの千葉来ません？') ? getTopicsAsText('/buffer/15-sabochiba-pickup.txt') : '';
 
 // 実行
-mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.5, $title, 'ねるるラジオ', $thumbnail);
+$res15 = mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.5, $title, 'ねるるラジオ', $thumbnail, $comment15);
+if ($res15) {
+    if (saveToPodcasts($outputMp3, $title, 15)) {
+        if (function_exists('generatePodcastXml')) {
+            generatePodcastXml('sabochiba');
+        }
+    }
+}
 
 // 30分放送
 /** 放送開始時刻（分） */
@@ -198,7 +328,10 @@ $outputMp3 = '/output/final_podcast_30.mp3';
 $title = 'ネルラジニュース';
 
 // 実行
-mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.5, $title, 'ねるるラジオ', $thumbnail);
+$res30 = mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.5, $title, 'ねるるラジオ', $thumbnail, '');
+if ($res30) {
+    saveToPodcasts($outputMp3, $title, 30);
+}
 
 // 45分放送
 /** 放送開始時刻（分） */
@@ -227,9 +360,16 @@ $ending    = '/assets/jingle/ネルルラジオ_lofi.mp3';
 $thumbnail = '/assets/img/ガジェットマニア.jpg';
 $outputMp3 = '/output/final_podcast_45.mp3';
 $title = 'ガジェットマニア';
+$comment45 = getTopicsAsText('/buffer/45-pickup.txt');
 
 // 実行
-mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.5, $title, 'ねるるラジオ', $thumbnail);
+$res45 = mixAudioWithOpEd($opening, $talkWav, $bgm, $ending, $outputMp3, 0.5, $title, 'ねるるラジオ', $thumbnail, $comment45);
+if ($res45) {
+    saveToPodcasts($outputMp3, $title, 45);
+    if (function_exists('generatePodcastXml')) {
+        generatePodcastXml('gadgetmania');
+    }
+}
 
 /**
  * ローカル内の他PHPファイルの実行関数

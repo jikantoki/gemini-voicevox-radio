@@ -49,6 +49,10 @@
   - **ID3 タグ & カバーアート付与**: 番組タイトル・アーティスト名メタデータとジャケット画像（JPEG）をMP3内に埋め込み。
 - 📡 **AzuraCast 連携 & 定時割り込み配信**
   - 生成されたMP3（`00.mp3`, `15.mp3`, `30.mp3`, `45.mp3`）を指定ディレクトリへ自動デプロイ。AzuraCastのスケジュール機能で定時割り込み放送。
+- 🎧 **Podcast 自動アーカイブ ＆ RSS (XML) 自動生成**
+  - 音声合成完了後、対象番組（「ねるるミュージックアカデミー」「サボさんの千葉来ません？」「ガジェットマニア」）の完成MP3をPodcast保存先（`musicacademy`, `sabochiba`, `gadgetmania` フォルダ）へ自動保存。
+  - ファイル名は `番組名_YYYYMMDDHHMM.mp3` として保存し、各トピック一覧はMP3内部のID3タグ（`comment` / `description`）に完全収録。
+  - さらに、保存完了時にApple Podcasts / Spotify規格準拠のRSSフィード（`musicacademy.xml`, `sabochiba.xml`, `gadgetmania.xml`）を `$RSS_PATH`（`https://radio.enoki.xyz/pages/rss/` 配下）へ自動生成・最新更新。エピソード説明文には「今日のトピック」詳細も自動反映。
 - 🔔 **Mattermost Webhook によるリアルタイム死活監視**
   - APIエラーや音声生成の失敗、ファイルコピーの成否をMattermostへ即時通知。
 
@@ -86,6 +90,7 @@ flowchart TD
     subgraph DEPLOY["配信デプロイ & 監視"]
         MP3["4本の完成MP3<br>(00 / 15 / 30 / 45.mp3)"]
         DEST["配信サーバー共有ディレクトリ<br>(Nextcloud / AzuraCast Media)"]
+        PODCAST["Podcast 保存ディレクトリ<br>(Nextcloud / Podcasts)"]
         AZURA["AzuraCast<br>(定時割り込みプレイリスト再生)"]
         MATTERMOST["Mattermost<br>(エラー・ステータス通知)"]
     end
@@ -93,6 +98,7 @@ flowchart TD
     START --> PIPELINE
     DATA_SOURCES -.-> STEP0
     STEP4 --> MP3 --> DEST --> AZURA
+    STEP4 -. 対象3番組 .-> PODCAST
     PIPELINE -. エラー発生時 .-> MATTERMOST
 ```
 
