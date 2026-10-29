@@ -1,4 +1,6 @@
 <?php
+ini_set('display_errors', '1');
+ini_set('error_reporting', E_ALL);
 header('Content-Type: application/json; charset=utf-8');
 set_time_limit(0); // 無制限に実行できるようにする
 
