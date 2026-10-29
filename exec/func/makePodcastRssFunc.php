@@ -61,6 +61,7 @@ function generatePodcastXml(string $targetProgramKey = ''): bool
     if (!is_dir($RSS_PATH)) {
         if (!mkdir($RSS_PATH, 0777, true) && !is_dir($RSS_PATH)) {
             echo "【RSS生成エラー】RSS保存先ディレクトリの作成に失敗しました -> {$RSS_PATH}\n";
+            getEcho("【RSS生成エラー】RSS保存先ディレクトリの作成に失敗しました -> {$RSS_PATH}\n");
             return false;
         }
     }
@@ -164,9 +165,7 @@ function generatePodcastXml(string $targetProgramKey = ''): bool
             echo "【RSS生成成功】{$prog['title']} -> {$outputXmlPath}\n";
         } else {
             echo "【RSS生成エラー】ファイル書き込みに失敗しました -> {$outputXmlPath}\n";
-            if (function_exists('getEcho')) {
-                getEcho("/sendMattermost.php?sendMessage=【RSS生成エラー】ファイル書き込みに失敗しました -> {$outputXmlPath}");
-            }
+            getEcho("/sendMattermost.php?sendMessage=【RSS生成エラー】ファイル書き込みに失敗しました -> {$outputXmlPath}");
         }
     }
 
@@ -226,4 +225,26 @@ function buildPodcastRssXml(array $program, array $items, string $feedUrl): stri
     $xml .= '</rss>' . "\n";
 
     return $xml;
+}
+
+/**
+ * ローカル内の他PHPファイルの実行関数
+ *
+ * @param $execPath 実行するPHPファイルのパス
+ * @return string 出力内容
+ */
+function getEcho ($execPath = '/index.php') {
+  $httpHost = $_SERVER['HTTP_HOST'] ?? 'localhost';
+
+  // http://localhost/exec/0-makePrompt/00.php のようなURLを組み立てる
+  $url = 'http://' . $httpHost . $execPath;
+
+  // HTTP経由でファイルを取得（別リクエストとして実行される）
+  $output = @file_get_contents($url);
+
+  if ($output === false) {
+    return 'Error: 読み込みに失敗しました (' . $url . ')';
+  }
+
+  return $output;
 }
