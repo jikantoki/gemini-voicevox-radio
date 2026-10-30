@@ -19,27 +19,58 @@ function getPodcastProgramDefinitions(): array
             'title'       => 'サボさんの千葉来ません？',
             'subDir'      => 'sabochiba',
             'xmlFilename' => 'sabochiba.xml',
-            'image'       => 'https://radio.enoki.xyz/img/programs/サボ千葉.jpg',
+            'imageSrc'    => '/var/www/html/vhosts/radio/img/programs/サボ千葉.jpg',
+            'imageName'   => 'sabochiba_1400.jpg',
             'description' => '千葉を愛し、千葉に愛された男「サボさん」が、千葉県の隠れた名所や絶品グルメ、ローカルな魅力を熱く語り尽くす観光勝手に応援バラエティ。',
             'category'    => 'Society & Culture',
+            'guid'        => 'b457e799-6e3e-526f-9982-f5651c6b541a',
         ],
         'gadgetmania' => [
             'title'       => 'ガジェットマニア',
             'subDir'      => 'gadgetmania',
             'xmlFilename' => 'gadgetmania.xml',
-            'image'       => 'https://radio.enoki.xyz/img/programs/ガジェットマニア.jpg',
+            'imageSrc'    => '/var/www/html/vhosts/radio/img/programs/ガジェットマニア.jpg',
+            'imageName'   => 'gadgetmania_1400.jpg',
             'description' => '最新のスマートフォン、PC周りの周辺機器、自作PCパーツから便利な家電まで、ガジェットを愛するすべての人のための、愛と物欲に溢れた11分間。',
             'category'    => 'Technology',
+            'guid'        => 'a21b44d8-7954-5d51-87a2-c74b88eb342b',
         ],
         'musicacademy' => [
             'title'       => 'ねるるミュージックアカデミー',
             'subDir'      => 'musicacademy',
             'xmlFilename' => 'musicacademy.xml',
-            'image'       => 'https://radio.enoki.xyz/img/programs/ねるるミュージックアカデミー.jpg',
+            'imageSrc'    => '/var/www/html/vhosts/radio/img/programs/ねるるミュージックアカデミー.jpg',
+            'imageName'   => 'musicacademy_1400.jpg',
             'description' => '音楽理論や打ち込み楽曲の極意について、初心者でもわかりやすく解説する音楽学習番組。音楽制作に興味がある方は必聴です。',
             'category'    => 'Music',
+            'guid'        => 'c902d3f1-4389-51a7-8911-3e4cb49ec813',
         ],
     ];
+}
+
+/**
+ * 1400x1400のPodcast用アートワーク画像が存在することを確認し、なければFFmpegで生成する
+ *
+ * @param string $srcPath 元画像パス
+ * @param string $dstPath 出力先パス
+ * @return bool 成功時true
+ */
+function ensurePodcastArtwork(string $srcPath, string $dstPath): bool
+{
+    if (file_exists($dstPath) && filesize($dstPath) > 0) {
+        return true;
+    }
+    if (!file_exists($srcPath)) {
+        return false;
+    }
+
+    $cmd = sprintf(
+        'ffmpeg -y -i %s -vf "scale=1400:1400:flags=lanczos" -frames:v 1 -update 1 -q:v 2 %s 2>&1',
+        escapeshellarg($srcPath),
+        escapeshellarg($dstPath)
+    );
+    @exec($cmd, $out, $ret);
+    return ($ret === 0 && file_exists($dstPath));
 }
 
 /**
@@ -61,13 +92,11 @@ function generatePodcastXml(string $targetProgramKey = ''): bool
     if (!is_dir($RSS_PATH)) {
         if (!mkdir($RSS_PATH, 0777, true) && !is_dir($RSS_PATH)) {
             echo "【RSS生成エラー】RSS保存先ディレクトリの作成に失敗しました -> {$RSS_PATH}\n";
-            getEcho("【RSS生成エラー】RSS保存先ディレクトリの作成に失敗しました -> {$RSS_PATH}\n");
             return false;
         }
     }
 
     // 小文字/大文字互換シンボリックリンクの確認・作成
-    // 例: /var/www/html/vhosts/radio/podcasts -> /var/www/html/vhosts/radio/Podcasts
     $lowerSymlink = '/var/www/html/vhosts/radio/podcasts';
     if (!file_exists($lowerSymlink) && !is_link($lowerSymlink) && is_dir($PODCAST_PATH)) {
         @symlink($PODCAST_PATH, $lowerSymlink);
@@ -92,6 +121,11 @@ function generatePodcastXml(string $targetProgramKey = ''): bool
     foreach ($targetList as $key => $prog) {
         $subDir = $prog['subDir'];
         $folderPath = rtrim($PODCAST_PATH, '/') . '/' . $subDir;
+
+        // 1400x1400のArtwork画像を確認・準備
+        $dstImagePath = rtrim($RSS_PATH, '/') . '/' . $prog['imageName'];
+        ensurePodcastArtwork($prog['imageSrc'], $dstImagePath);
+        $imageUrl = $feedBaseUrl . '/' . $prog['imageName'];
 
         $items = [];
         if (is_dir($folderPath)) {
@@ -130,6 +164,10 @@ function generatePodcastXml(string $targetProgramKey = ''): bool
                     $tags = $meta['format']['tags'] ?? [];
                     $topicText = trim($tags['comment'] ?? $tags['description'] ?? '');
 
+                    // 不可視文字や制御文字のサニタイズ（UTF-8バリデーション対策）
+                    $topicText = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $topicText);
+                    $topicText = str_replace(["\r\n", "\r"], "\n", $topicText);
+
                     // エピソード詳細説明文: 基本説明文 + 今日のトピック（ID3タグより取得）
                     $itemDescription = $prog['description'];
                     if (!empty($topicText)) {
@@ -151,13 +189,14 @@ function generatePodcastXml(string $targetProgramKey = ''): bool
                         ],
                         'guid'        => $guid,
                         'duration'    => $duration,
+                        'image'       => $imageUrl,
                     ];
                 }
             }
         }
 
         // XML の構築
-        $xmlContent = buildPodcastRssXml($prog, $items, $feedBaseUrl . '/' . $prog['xmlFilename']);
+        $xmlContent = buildPodcastRssXml($prog, $items, $feedBaseUrl . '/' . $prog['xmlFilename'], $imageUrl);
 
         // XML ファイルの保存
         $outputXmlPath = rtrim($RSS_PATH, '/') . '/' . $prog['xmlFilename'];
@@ -165,7 +204,9 @@ function generatePodcastXml(string $targetProgramKey = ''): bool
             echo "【RSS生成成功】{$prog['title']} -> {$outputXmlPath}\n";
         } else {
             echo "【RSS生成エラー】ファイル書き込みに失敗しました -> {$outputXmlPath}\n";
-            getEcho("/sendMattermost.php?sendMessage=【RSS生成エラー】ファイル書き込みに失敗しました -> {$outputXmlPath}");
+            if (function_exists('getEcho')) {
+                getEcho("/sendMattermost.php?sendMessage=【RSS生成エラー】ファイル書き込みに失敗しました -> {$outputXmlPath}");
+            }
         }
     }
 
@@ -175,7 +216,7 @@ function generatePodcastXml(string $targetProgramKey = ''): bool
 /**
  * 番組情報とエピソード一覧からPodcast RSS XML文字列を生成する
  */
-function buildPodcastRssXml(array $program, array $items, string $feedUrl): string
+function buildPodcastRssXml(array $program, array $items, string $feedUrl, string $imageUrl): string
 {
     global $RADIO_META;
 
@@ -187,6 +228,7 @@ function buildPodcastRssXml(array $program, array $items, string $feedUrl): stri
     $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
     $xml .= '<rss version="2.0"' . "\n";
     $xml .= '    xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"' . "\n";
+    $xml .= '    xmlns:podcast="https://podcastindex.org/namespace/1.0"' . "\n";
     $xml .= '    xmlns:content="http://purl.org/rss/1.0/modules/content/"' . "\n";
     $xml .= '    xmlns:atom="http://www.w3.org/2005/Atom">' . "\n";
     $xml .= '  <channel>' . "\n";
@@ -195,21 +237,31 @@ function buildPodcastRssXml(array $program, array $items, string $feedUrl): stri
     $xml .= '    <language>' . htmlspecialchars($language, ENT_XML1, 'UTF-8') . '</language>' . "\n";
     $xml .= '    <description><![CDATA[' . $program['description'] . ']]></description>' . "\n";
     $xml .= '    <itunes:author>' . htmlspecialchars($author, ENT_XML1, 'UTF-8') . '</itunes:author>' . "\n";
-    $xml .= '    <itunes:summary><![CDATA[' . $program['description'] . ']]></itunes:summary>' . "\n";
+    $xml .= '    <itunes:summary>' . htmlspecialchars($program['description'], ENT_XML1, 'UTF-8') . '</itunes:summary>' . "\n";
     $xml .= '    <itunes:owner>' . "\n";
     $xml .= '      <itunes:name>' . htmlspecialchars($author, ENT_XML1, 'UTF-8') . '</itunes:name>' . "\n";
     $xml .= '      <itunes:email>' . htmlspecialchars($mail, ENT_XML1, 'UTF-8') . '</itunes:email>' . "\n";
     $xml .= '    </itunes:owner>' . "\n";
-    $xml .= '    <itunes:image href="' . htmlspecialchars($program['image'], ENT_XML1, 'UTF-8') . '" />' . "\n";
+    $xml .= '    <itunes:image href="' . htmlspecialchars($imageUrl, ENT_XML1, 'UTF-8') . '" />' . "\n";
+    $xml .= '    <image>' . "\n";
+    $xml .= '      <url>' . htmlspecialchars($imageUrl, ENT_XML1, 'UTF-8') . '</url>' . "\n";
+    $xml .= '      <title>' . htmlspecialchars($program['title'], ENT_XML1, 'UTF-8') . '</title>' . "\n";
+    $xml .= '      <link>' . htmlspecialchars($siteUrl, ENT_XML1, 'UTF-8') . '</link>' . "\n";
+    $xml .= '    </image>' . "\n";
     $xml .= '    <itunes:category text="' . htmlspecialchars($program['category'], ENT_XML1, 'UTF-8') . '" />' . "\n";
-    $xml .= '    <itunes:explicit>no</itunes:explicit>' . "\n";
+    $xml .= '    <itunes:explicit>false</itunes:explicit>' . "\n";
+    $xml .= '    <podcast:locked>no</podcast:locked>' . "\n";
+    if (!empty($program['guid'])) {
+        $xml .= '    <podcast:guid>' . htmlspecialchars($program['guid'], ENT_XML1, 'UTF-8') . '</podcast:guid>' . "\n";
+    }
     $xml .= '    <atom:link href="' . htmlspecialchars($feedUrl, ENT_XML1, 'UTF-8') . '" rel="self" type="application/rss+xml" />' . "\n";
 
     foreach ($items as $item) {
         $xml .= '    <item>' . "\n";
         $xml .= '      <title>' . htmlspecialchars($item['title'], ENT_XML1, 'UTF-8') . '</title>' . "\n";
+        $xml .= '      <link>' . htmlspecialchars($siteUrl, ENT_XML1, 'UTF-8') . '</link>' . "\n";
         $xml .= '      <description><![CDATA[' . $item['description'] . ']]></description>' . "\n";
-        $xml .= '      <itunes:summary><![CDATA[' . $item['description'] . ']]></itunes:summary>' . "\n";
+        $xml .= '      <itunes:summary>' . htmlspecialchars($item['description'], ENT_XML1, 'UTF-8') . '</itunes:summary>' . "\n";
         $xml .= '      <itunes:author>' . htmlspecialchars($author, ENT_XML1, 'UTF-8') . '</itunes:author>' . "\n";
         $xml .= '      <pubDate>' . $item['pubDate'] . '</pubDate>' . "\n";
         $xml .= '      <enclosure url="' . htmlspecialchars($item['enclosure']['url'], ENT_XML1, 'UTF-8') . '" length="' . $item['enclosure']['length'] . '" type="' . $item['enclosure']['type'] . '" />' . "\n";
@@ -217,7 +269,8 @@ function buildPodcastRssXml(array $program, array $items, string $feedUrl): stri
         if ($item['duration'] > 0) {
             $xml .= '      <itunes:duration>' . $item['duration'] . '</itunes:duration>' . "\n";
         }
-        $xml .= '      <itunes:explicit>no</itunes:explicit>' . "\n";
+        $xml .= '      <itunes:image href="' . htmlspecialchars($item['image'], ENT_XML1, 'UTF-8') . '" />' . "\n";
+        $xml .= '      <itunes:explicit>false</itunes:explicit>' . "\n";
         $xml .= '    </item>' . "\n";
     }
 
