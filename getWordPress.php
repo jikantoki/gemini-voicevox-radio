@@ -48,8 +48,12 @@ foreach ($pickupData as $pickup) {
   $content = $pickup['content']['rendered'];
   $content = strip_tags($content);
   $content = str_replace("\n", "", $content);
+  $date = $pickup['date'];
+  $modified = $pickup['modified'];
   $mappedData = [
     'title' => $title,
+    'date' => $date,
+    'modified' => $modified,
     'content' => $content,
   ];
   $outputData[] = $mappedData;
