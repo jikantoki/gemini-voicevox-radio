@@ -5,9 +5,8 @@
 header('Content-Type: text/plain; charset=utf-8');
 set_time_limit(0);
 
-$docRoot = rtrim(!empty($_SERVER['DOCUMENT_ROOT']) ? $_SERVER['DOCUMENT_ROOT'] : dirname(__DIR__), '/\\');
-require_once $docRoot . '/env.php';
-require_once $docRoot . '/exec/func/makePodcastRssFunc.php';
+// 共通関数の読み込み
+require_once dirname(__DIR__) . '/app_functions.php';
 
 echo "Podcast RSS (XML) の生成を開始します...\n";
 generatePodcastXml(); // 全番組生成

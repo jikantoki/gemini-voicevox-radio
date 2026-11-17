@@ -154,6 +154,7 @@ gemini-api/
 │   ├── 30-news.txt               # ニュース用プロンプト
 │   └── 45-gadget.txt             # ガジェット番組用プロンプト
 ├── talkHistory/                  # 生成された台本のアーカイブ保存先（YYYY-MM-DD-HHMM）
+├── app_functions.php             # アプリケーション共通関数定義（API連携/ファイル/音声処理/Podcast等）
 ├── env.php                       # 環境設定ファイル（APIキー、URL等）※git管理外
 ├── env.php.sample                # 環境設定サンプルトークン
 ├── getJartic.php                 # JARTIC交通情報パース・JSON出力

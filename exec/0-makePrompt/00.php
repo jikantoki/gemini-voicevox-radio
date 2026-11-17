@@ -1,6 +1,10 @@
 <?php
 header('Content-Type: application/json; charset=utf-8');
 date_default_timezone_set('Asia/Tokyo');
+
+// 共通関数の読み込み
+require_once dirname(dirname(__DIR__)) . '/app_functions.php';
+
 $hour = (int)date('G'); // 現在の時間を取得（0〜23の整数）
 $minute = (int)date('i'); // 現在の分を取得（0〜59の整数）
 
@@ -379,17 +383,4 @@ if (file_exists($filename)) {
     echo $prompt;
 } else {
     echo "Prompt file not found.";
-}
-
-/**
- * テキストファイルのローカル保存
- *
- * @param string $filename 保存するファイル名
- * @param string $content 保存する内容
- * @return int|false 保存に成功した場合は書き込んだバイト数、失敗した場合はfalse
- */
-function outputToFile ($filename = '', $content = '') {
-  $filePath = $_SERVER['DOCUMENT_ROOT'] . $filename;
-  $content = str_replace('\n', "\n", $content);
-  return file_put_contents($filePath, $content);
 }
