@@ -52,12 +52,20 @@ foreach ($newsListKeys as $key) {
     $finalNewsList[] = $newsList[$key];
 }
 
+$greeting = ($hour >= 5 && $hour < 11) ? 'おはようございます'
+          : (($hour >= 11 && $hour < 18) ? 'こんにちは' : 'こんばんは');
+
 $filename = $_SERVER['DOCUMENT_ROOT'] . '/prompts/30-news.txt';
 
 if (file_exists($filename)) {
     $prompt = file_get_contents($filename);
+    $prompt = str_replace("<!-- 時刻 -->", "{$hour}時30分", $prompt);
+    $prompt = str_replace("<!-- 挨拶 -->", $greeting, $prompt);
+    $prompt = str_replace("<!-- ニュース情報 -->", json_encode($finalNewsList, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT), $prompt);
+    $prompt = str_replace("<!-- 交通情報 -->", $jarticJson, $prompt);
+    $prompt = str_replace("<!-- 天気情報 -->", $weatherJson, $prompt);
 
-    echo $prompt . "\n\n" . "放送開始時に、時刻は" . $hour . "時30分になりました。を読み上げてください。\n\n" . $jarticJson . "\n\n" . $weatherJson . "\n\n" . json_encode($finalNewsList, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);;
+    echo $prompt;
 } else {
     echo "Prompt file not found.";
 }

@@ -366,12 +366,17 @@ foreach ($randomKeys as $key) {
     $pickupArray[] = $pickupList[$key];
 }
 
+$greeting = ($hour >= 5 && $hour < 11) ? 'おはようございます'
+          : (($hour >= 11 && $hour < 18) ? 'こんにちは' : 'こんばんは');
+
 if (file_exists($filename)) {
     $prompt = file_get_contents($filename);
+    $prompt = str_replace("<!-- 時刻 -->", "{$hour}時00分", $prompt);
+    $prompt = str_replace("<!-- 挨拶 -->", $greeting, $prompt);
     $prompt = str_replace("<!-- 今日のお題 -->", $pickup, $prompt);
     outputToFile("/buffer/00-pickup.txt", json_encode($pickupArray, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
 
-    echo $prompt . "\n\n" . "放送開始時に、時刻は" . $hour . "時になりました。を読み上げてください。";
+    echo $prompt;
 } else {
     echo "Prompt file not found.";
 }
